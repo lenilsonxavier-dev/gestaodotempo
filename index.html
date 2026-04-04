@@ -14,11 +14,10 @@
         .toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; align-items: center; }
         .search-input { flex-grow: 1; padding: 12px 20px; border-radius: 40px; border: 2px solid #cbd5e1; outline: none; font-size: 16px; }
         
-        /* Botões */
+        /* Botões e Cores Padrão */
         .btn { border: none; padding: 10px 20px; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; transition: 0.3s; min-height: 44px; display: flex; align-items: center; justify-content: center; }
-        .btn-navy { background: #1e3a5f; }
-        .btn-blue { background: #2563eb; } /* Cor Azul para o Calendário */
-        .btn-red { background: #ef4444; }
+        .btn-navy { background: #1e3a5f !important; color: white !important; opacity: 1 !important; } 
+        .btn-red { background: #ef4444 !important; color: white !important; }
         .btn-lock { background: #64748b; font-size: 1.1rem; padding: 8px 15px; }
         .btn-lock.unlocked { background: #22c55e; }
 
@@ -28,7 +27,7 @@
         .grid-header, .time-slot { background: #f8fafc; font-weight: bold; text-align: center; padding: 8px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; min-height: 50px; }
         .schedule-cell { border-bottom: 0.5px solid #e2e8f0; border-right: 0.5px solid #e2e8f0; padding: 8px; min-height: 80px; text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: pointer; transition: 0.2s; position: relative; }
         
-        /* Destaques */
+        /* Estilos de Células */
         .cell-quebrada { background-color: #fef9c3 !important; border: 1px solid #facc15 !important; }
         .cell-hi { background-color: #ffcfcf !important; border: 1.5px solid #ef4444 !important; }
         .cell-hl { background-color: #d1fae5 !important; border: 1.5px solid #10b981 !important; }
@@ -39,13 +38,15 @@
         .tab { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 40px; cursor: pointer; font-weight: 600; white-space: nowrap; }
         .tab.active { background: #1e3a5f; color: white; }
 
-        /* Modais e Menus */
+        /* Modais */
         #calendarModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 4000; padding: 20px; }
         .modal-content { background: white; width: 100%; height: 100%; border-radius: 20px; overflow: hidden; position: relative; }
         .close-calendar { position: absolute; top: 15px; right: 20px; background: #ef4444; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-weight: bold; z-index: 4001; }
+        
         #contextMenu { display: none; position: absolute; background: white; border: 1px solid #ccc; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 3000; border-radius: 8px; overflow: hidden; }
         #contextMenu div { padding: 12px 20px; cursor: pointer; font-size: 14px; }
         #contextMenu div:hover { background: #f0f0f0; }
+        
         #loginOverlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 5000; justify-content: center; align-items: center; }
         .login-box { background: white; padding: 30px; border-radius: 20px; width: 320px; text-align: center; }
         .footer-area { margin-top: 20px; padding: 15px; border-radius: 12px; background: #fffbeb; border: 2px dashed #f59e0b; font-weight: bold; min-height: 50px; outline: none; }
@@ -65,151 +66,4 @@
 <div id="loginOverlay">
     <div class="login-box">
         <h3>Acesso Restrito</h3>
-        <input type="password" id="passInput" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd;" placeholder="Senha do Professor">
-        <button class="btn btn-navy" style="width:100%" onclick="window.tryLogin()">Entrar</button>
-    </div>
-</div>
-
-<div class="header-institucional"><img id="headerImg" src=""></div>
-
-<div class="main-container">
-    <div class="toolbar">
-        <input type="text" id="teacherSearch" class="search-input" placeholder="🔍 Localizar Professor...">
-        <button id="lockBtn" class="btn btn-lock" onclick="window.openLogin()">🔒</button>
-        <button class="btn btn-red" onclick="window.print()">🖨️ PDF</button>
-        <span id="cloudStatus">☁️</span>
-    </div>
-    
-    <div class="tabs-row">
-        <div id="shiftTabs" style="display:flex; gap:8px;"></div>
-        <button class="tab btn-blue" style="border:none; color:white;" onclick="window.openCalendar()">📅 Calendário Escolar</button>
-    </div>
-    
-    <div class="tabs-row" id="dayTabs"></div>
-    <div class="grid-wrapper"><div id="scheduleGrid"></div></div>
-    <div class="footer-area" id="footerLegend" contenteditable="false" onblur="window.saveAuto()">⏱️ INTERVALOS...</div>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyCjs0Emwh1Eyqf7pXYEJt9MBfY0Ga8ZJBc",
-        authDomain: "gestao-de-tempo-d4319.firebaseapp.com",
-        databaseURL: "https://gestao-de-tempo-d4319-default-rtdb.firebaseio.com",
-        projectId: "gestao-de-tempo-d4319",
-        storageBucket: "gestao-de-tempo-d4319.appspot.com",
-        messagingSenderId: "1074574504996",
-        appId: "1:1074574504996:web:87e81456b1460e03a4d4b1"
-    };
-    
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const dbRef = ref(db, 'horarios_quintino');
-
-    window.saveAuto = function() {
-        if(!window.isEditing) return;
-        document.getElementById('cloudStatus').innerText = "🔄";
-        window.config[window.activeShift].legendasPorDia[window.activeDay] = document.getElementById("footerLegend").innerText;
-        set(dbRef, { config: window.config, lastUpdate: new Date().getTime() })
-        .then(() => { document.getElementById('cloudStatus').innerText = "✅"; setTimeout(()=>document.getElementById('cloudStatus').innerText="☁️", 2000); });
-    };
-
-    onValue(dbRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data && data.config) { window.config = data.config; if(!window.isEditing) window.renderAll(); }
-        else { window.renderAll(); }
-    });
-</script>
-
-<script>
-    const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
-    window.isEditing = false;
-    window.activeShift = "manha";
-    window.activeDay = "Segunda";
-    let searchTerm = "";
-    let draggedData = null;
-
-    // ESTRUTURA ORIGINAL: 9 TURMAS (10 colunas com a hora) e 5 AULAS (6 linhas com o cabeçalho)
-    window.config = {
-        manha: { 
-            aulas: [{l:"1ª",h:"07:10"},{l:"2ª",h:"08:00"},{l:"3ª",h:"08:50"},{l:"4ª",h:"10:00"},{l:"5ª",h:"10:50"}], 
-            turmas: ["1ºA","1ºB","2ºA","2ºB","3ºA","3ºB","4ºA","4ºB","5ºA"], 
-            data: {}, legendasPorDia: {} 
-        },
-        tarde: { 
-            aulas: [{l:"1ª",h:"13:30"},{l:"2ª",h:"14:20"},{l:"3ª",h:"15:10"},{l:"4ª",h:"16:20"},{l:"5ª",h:"17:10"}], 
-            turmas: ["1ºA","1ºB","2ºA","2ºB","3ºA","3ºB","4ºA","4ºB","5ºA"], 
-            data: {}, legendasPorDia: {} 
-        }
-    };
-
-    window.openCalendar = () => {
-        const modal = document.getElementById('calendarModal');
-        const frame = document.getElementById('calFrame');
-        frame.src = "https://lenilsonxavier-dev.github.io/gestaodotempo/calen.html";
-        modal.style.display = 'block';
-    };
-
-    window.renderAll = function() {
-        const img = document.getElementById("headerImg");
-        img.src = window.activeShift === "manha" ? "https://raw.githubusercontent.com/lenilsonxavier-dev/Hor-rio-Quintino-Bocaiuva-2026/main/frontquintinobocav.jpg" : "https://raw.githubusercontent.com/lenilsonxavier-dev/Hor-rio-Quintino-Bocaiuva-2026/main/frontquirino.jpg";
-        document.getElementById("shiftTabs").innerHTML = ["manha", "tarde"].map(s => `<div class="tab ${window.activeShift===s?'active':''}" onclick="window.activeShift='${s}';window.renderAll()">${s.toUpperCase()}</div>`).join("");
-        document.getElementById("dayTabs").innerHTML = DIAS.map(d => `<div class="tab ${window.activeDay===d?'active':''}" onclick="window.activeDay='${d}';window.renderAll()">${d}</div>`).join("");
-        const shift = window.config[window.activeShift];
-        
-        if(!shift.data[window.activeDay]) shift.data[window.activeDay] = Array(shift.aulas.length).fill().map(() => Array(shift.turmas.length).fill().map(() => ({teacher:"Livre", room:"---"})));
-        
-        let html = `<div class="schedule-grid" style="grid-template-columns: 100px repeat(${shift.turmas.length}, minmax(120px, 1fr))">`;
-        html += `<div class="grid-header">Horários</div>`;
-        shift.turmas.forEach((t, i) => html += `<div class="grid-header" oncontextmenu="window.showMenu(event, 'col', ${i})" onclick="window.editTurma(${i})">${t}</div>`);
-        
-        shift.aulas.forEach((aula, aIdx) => {
-            html += `<div class="time-slot" oncontextmenu="window.showMenu(event, 'row', ${aIdx})" onclick="window.editHora(${aIdx})">${aula.l}<br>${aula.h}</div>`;
-            shift.turmas.forEach((_, tIdx) => {
-                const cell = shift.data[window.activeDay][aIdx][tIdx] || {teacher:"Livre", room:"---"};
-                let classes = "schedule-cell";
-                const prof = cell.teacher || "Livre";
-                if (prof.includes('*')) classes += " cell-quebrada";
-                if (prof.toUpperCase().includes("HI")) classes += " cell-hi";
-                else if (prof.toUpperCase().includes("HL")) classes += " cell-hl";
-                if (searchTerm && prof.toUpperCase().includes(searchTerm.toUpperCase()) && prof !== "Livre") classes += " cell-highlight";
-                html += `<div class="${classes}" draggable="${window.isEditing}" ondragstart="handleDrag(event,${aIdx},${tIdx})" ondragover="event.preventDefault()" ondrop="handleDrop(event,${aIdx},${tIdx})" onclick="window.editCell(${aIdx},${tIdx})"><strong>${prof}</strong><small>${cell.room || "---"}</small></div>`;
-            });
-        });
-        document.getElementById("scheduleGrid").innerHTML = html + `</div>`;
-        document.getElementById("footerLegend").innerText = (shift.legendasPorDia || {})[window.activeDay] || "⏱️ INTERVALOS...";
-    };
-
-    window.tryLogin = () => {
-        if(document.getElementById("passInput").value === "Professor Leno") {
-            window.isEditing = true;
-            document.getElementById("lockBtn").innerText = "🔓";
-            document.getElementById("lockBtn").classList.add("unlocked");
-            document.getElementById("footerLegend").contentEditable = "true";
-            document.getElementById("loginOverlay").style.display="none";
-            window.renderAll();
-        } else { alert("Senha incorreta!"); }
-    };
-
-    window.openLogin = () => { if(window.isEditing) location.reload(); else document.getElementById("loginOverlay").style.display="flex"; };
-    window.editCell = (a, t) => { if(!window.isEditing) return; const cell = window.config[window.activeShift].data[window.activeDay][a][t]; const p = prompt("Professor:", cell.teacher); if(p !== null) { cell.teacher = p || "Livre"; cell.room = prompt("Sala:", cell.room) || "---"; window.saveAuto(); window.renderAll(); }};
-    window.editTurma = (i) => { if(!window.isEditing) return; const n = prompt("Turma:", window.config[window.activeShift].turmas[i]); if(n) { window.config[window.activeShift].turmas[i]=n; window.saveAuto(); window.renderAll(); }};
-    window.editHora = (i) => { if(!window.isEditing) return; const a = window.config[window.activeShift].aulas[i]; const l = prompt("Label:", a.l); const h = prompt("Hora:", a.h); if(l&&h) { a.l=l; a.h=h; window.saveAuto(); window.renderAll(); }};
-    window.showMenu = (e, type, idx) => { if(!window.isEditing) return; e.preventDefault(); const m = document.getElementById("contextMenu"); m.style.display="block"; m.style.left=e.pageX+"px"; m.style.top=e.pageY+"px"; m.innerHTML = type === 'col' ? `<div onclick="window.addCol(${idx})">➕ Adicionar Turma</div><div onclick="window.delCol(${idx})" style="color:red">🗑️ Remover Turma</div>` : `<div onclick="window.addRow(${idx})">➕ Adicionar Horário</div><div onclick="window.delRow(${idx})" style="color:red">🗑️ Remover Horário</div>`; };
-    
-    function handleDrag(e, a, t) { draggedData = { a, t, content: {...window.config[window.activeShift].data[window.activeDay][a][t]} }; }
-    function handleDrop(e, a, t) { e.preventDefault(); const data = window.config[window.activeShift].data[window.activeDay]; if(!e.ctrlKey) data[draggedData.a][draggedData.t] = {teacher:"Livre", room:"---"}; data[a][t] = draggedData.content; window.saveAuto(); window.renderAll(); }
-    
-    window.addCol = (i) => { window.config[window.activeShift].turmas.splice(i+1, 0, "Nova"); window.saveAuto(); window.renderAll(); };
-    window.delCol = (i) => { if(confirm("Remover?")) { window.config[window.activeShift].turmas.splice(i, 1); window.saveAuto(); window.renderAll(); }};
-    window.addRow = (i) => { window.config[window.activeShift].aulas.splice(i+1, 0, {l:"Nª", h:"00:00"}); window.saveAuto(); window.renderAll(); };
-    window.delRow = (i) => { if(confirm("Remover?")) { window.config[window.activeShift].aulas.splice(i, 1); window.saveAuto(); window.renderAll(); }};
-    
-    document.addEventListener("click", () => document.getElementById("contextMenu").style.display="none");
-    document.getElementById("teacherSearch").oninput = (e) => { searchTerm = e.target.value; window.renderAll(); };
-    window.onload = () => window.renderAll();
-</script>
-</body>
-</html>
+        <input type="password" id="passInput" style="width:100%; padding:12px; margin-bottom:15px; border-radius:8px; border:1px solid #ddd;" placeholder="Senha
