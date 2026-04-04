@@ -124,14 +124,12 @@
     <div class="legenda-painel">
         <span>🔵 HTP (Ter/Qui)</span> <span>🟢 Mês atual</span> <span>🔴 Feriado</span> 
         <span>🟣 Conselho/Reunião</span> <span>🟡 Recesso</span>
-        <span>🔔 Notificações: 1 semana antes + dia do evento</span>
     </div>
 
     <div class="info-panel">
         <div class="card-config">
-            <strong>⏰ SISTEMA DE NOTIFICAÇÕES INTELIGENTES</strong><br>
-            <span style="font-size:12px">🔔 HTPc, Reuniões, Conselhos e Atendimentos com alerta automático.</span>
-            <div class="notif-info" id="statusFirebase">☁️ Conectando...</div>
+            <strong>⏰ STATUS DA NUVEM:</strong>
+            <div class="notif-info" id="statusFirebase">Iniciando...</div>
             <button class="btn-acao btn-alarme" id="testNotifBtn">🔊 Testar Som</button>
             <button class="btn-acao" onclick="window.print()">🖨️ Imprimir</button>
             <button class="btn-acao" id="resetAgendaMesBtn">🗑️ Resetar Mês</button>
@@ -157,46 +155,47 @@
     const db = getDatabase(app);
     const calRef = ref(db, 'calendario_escolar_dados');
 
-    // Sincronização com Firebase
+    // Monitoramento em tempo real
     onValue(calRef, (snapshot) => {
         const data = snapshot.val();
+        const statusEl = document.getElementById('statusFirebase');
+        
         if (data && data.eventos) {
+            // Só atualiza se houver dados reais para não sobrescrever com vazio em caso de erro
             window.agendaStorage = new Map(Object.entries(data.eventos));
-            document.getElementById('statusFirebase').innerText = "✅ Sincronizado";
-            window.renderCalendar(window.anoAtual, window.mesAtual);
-            window.reagendarNotificacoesParaMes();
+            statusEl.innerText = "✅ Dados Recuperados";
+            statusEl.style.background = "#d4edda";
         } else {
-            document.getElementById('statusFirebase').innerText = "🆕 Novo Calendário";
+            statusEl.innerText = "⚠️ Sem dados na nuvem";
+            statusEl.style.background = "#f8d7da";
         }
+        window.renderCalendar(window.anoAtual, window.mesAtual);
+    }, (error) => {
+        console.error("Erro Firebase:", error);
+        document.getElementById('statusFirebase').innerText = "❌ Erro de Conexão";
     });
 
     window.saveToFirebase = function() {
         const obj = Object.fromEntries(window.agendaStorage);
-        set(calRef, { eventos: obj, lastUpdate: new Date().getTime() });
+        set(calRef, { 
+            eventos: obj, 
+            lastUpdate: new Date().toISOString() 
+        }).then(() => {
+            document.getElementById('statusFirebase').innerText = "✅ Salvo agora";
+        });
     };
 </script>
 
 <script>
+    // Lógica do Calendário
     window.anoAtual = 2026;
     window.mesAtual = 3;
     window.agendaStorage = new Map();
-    let notificacoesDisparadas = new Set();
-    let activeTimeouts = [];
     const weekDays = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"];
     const mesesNomes = ["JANEIRO","FEVEREIRO","MARÇO","ABRIL","MAIO","JUNHO","JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"];
     
-    const tiposEventos = [
-        { keywords: ["HTPC", "HTPc", "htpc"], tipo: "htpc", alertaPrevioMin: 5, notificarSemanaAntes: false, nomeExibicao: "HTPc" },
-        { keywords: ["REUNIÃO DE PAIS", "REUNIAO DE PAIS"], tipo: "reuniao_pais", alertaPrevioMin: 0, notificarSemanaAntes: true, nomeExibicao: "Reunião de Pais" },
-        { keywords: ["REUNIÃO COM GESTOR", "REUNIAO COM GESTOR"], tipo: "reuniao_gestor", alertaPrevioMin: 0, notificarSemanaAntes: true, nomeExibicao: "Reunião com Gestor" },
-        { keywords: ["CONSELHO DE CLASSE"], tipo: "conselho_classe", alertaPrevioMin: 0, notificarSemanaAntes: true, nomeExibicao: "Conselho de Classe" },
-        { keywords: ["PARADA PEDAGÓGICA", "PARADA PEDAGOGICA"], tipo: "parada_pedagogica", alertaPrevioMin: 0, notificarSemanaAntes: true, nomeExibicao: "Parada Pedagógica" },
-        { keywords: ["ATENDIMENTO AOS PAIS", "ATENDIMENTO AOS RESPONSÁVEIS"], tipo: "atendimento_pais", alertaPrevioMin: 0, notificarSemanaAntes: true, nomeExibicao: "Atendimento aos Pais" }
-    ];
-
     const eventosFixos = new Map();
-    const feriadosList = ["4-21","10-15","4-1","8-7","11-25","0-1"];
-    feriadosList.forEach(f => eventosFixos.set(f, "feriado"));
+    ["4-21","10-15","4-1","8-7","11-25","0-1"].forEach(f => eventosFixos.set(f, "feriado"));
     eventosFixos.set("3-27","conselho"); eventosFixos.set("3-28","conselho");
     eventosFixos.set("2-15","conselho"); eventosFixos.set("6-10","conselho");
     eventosFixos.set("0-25","recesso");
@@ -213,46 +212,21 @@
         } catch(e) {}
     }
 
-    function exibirNotificacao(msg, tipo, dataStr) {
-        playBeep(880, 0.4);
-        const div = document.createElement("div");
-        div.innerText = `🔔 ${msg}`;
-        Object.assign(div.style, { position: "fixed", bottom: "20px", right: "20px", backgroundColor: "#e67e22", color: "white", padding: "12px 20px", borderRadius: "40px", zIndex: "9999", fontWeight: "bold", boxShadow: "0 4px 12px black" });
-        document.body.appendChild(div);
-        setTimeout(() => div.remove(), 6000);
-    }
-
-    window.reagendarNotificacoesParaMes = function() {
-        activeTimeouts.forEach(clearTimeout);
-        activeTimeouts = [];
-        const days = new Date(window.anoAtual, window.mesAtual+1, 0).getDate();
-        for (let d=1; d<=days; d++) {
-            const key = `${window.anoAtual}-${String(window.mesAtual+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const text = window.agendaStorage.get(key);
-            if (text) {
-                tiposEventos.forEach(ev => {
-                    if (ev.keywords.some(kw => text.toUpperCase().includes(kw.toUpperCase()))) {
-                        const target = new Date(window.anoAtual, window.mesAtual, d, 7, 0);
-                        const diff = target - new Date();
-                        if (diff > 0) activeTimeouts.push(setTimeout(() => exibirNotificacao(ev.nomeExibicao, ev.tipo, key), diff));
-                    }
-                });
-            }
-        }
-    };
-
     window.renderCalendar = function(year, month) {
         const tbody = document.getElementById("calendarBody");
+        if (!tbody) return;
         tbody.innerHTML = "";
         const first = new Date(year, month, 1).getDay();
         const total = new Date(year, month+1, 0).getDate();
         let row = document.createElement("tr");
+        
         for(let i=0; i<first; i++) row.appendChild(document.createElement("td")).style.background = "#f1f3f5";
         
         for(let d=1; d<=total; d++) {
             const key = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
             const wd = new Date(year, month, d).getDay();
             const td = document.createElement("td");
+            
             if (wd === 2 || wd === 4) td.className = "htp-bg";
             if (wd === 0) td.className = "domingo-bg";
             if (wd === 6) td.className = "sabado-bg";
@@ -261,14 +235,18 @@
             const cell = document.createElement("div");
             cell.className = "cell-day";
             cell.innerHTML = `<div class="day-number">${d}</div>`;
+            
             const area = document.createElement("div");
             area.className = "agenda-text";
             area.contentEditable = true;
             area.innerText = window.agendaStorage.get(key) || "";
+            
             area.onblur = () => {
-                window.agendaStorage.set(key, area.innerText);
+                const val = area.innerText.trim();
+                window.agendaStorage.set(key, val);
                 if(window.saveToFirebase) window.saveToFirebase();
             };
+            
             cell.appendChild(area);
             td.appendChild(cell);
             row.appendChild(td);
@@ -281,8 +259,17 @@
     document.getElementById("btnPrev").onclick = () => { window.mesAtual--; if(window.mesAtual<0){window.mesAtual=11; window.anoAtual--;} window.renderCalendar(window.anoAtual, window.mesAtual); };
     document.getElementById("btnNext").onclick = () => { window.mesAtual++; if(window.mesAtual>11){window.mesAtual=0; window.anoAtual++;} window.renderCalendar(window.anoAtual, window.mesAtual); };
     document.getElementById("testNotifBtn").onclick = () => playBeep(1000, 0.5);
-    document.getElementById("resetAgendaMesBtn").onclick = () => { if(confirm("Limpar este mês?")) { window.agendaStorage.clear(); if(window.saveToFirebase) window.saveToFirebase(); window.renderCalendar(window.anoAtual, window.mesAtual); }};
+    document.getElementById("resetAgendaMesBtn").onclick = () => { if(confirm("Limpar este mês?")) { 
+        const total = new Date(window.anoAtual, window.mesAtual+1, 0).getDate();
+        for(let i=1; i<=total; i++) {
+            const key = `${window.anoAtual}-${String(window.mesAtual+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+            window.agendaStorage.delete(key);
+        }
+        if(window.saveToFirebase) window.saveToFirebase(); 
+        window.renderCalendar(window.anoAtual, window.mesAtual); 
+    }};
 
+    // Inicialização Manual
     const headerRow = document.getElementById("weekRow");
     weekDays.forEach(day => headerRow.appendChild(document.createElement("th")).innerText = day);
     window.renderCalendar(window.anoAtual, window.mesAtual);
