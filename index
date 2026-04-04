@@ -110,7 +110,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    // Configuração oficial para o seu projeto
     const firebaseConfig = {
         apiKey: "AIzaSyCjs0Emwh1Eyqf7pXYEJt9MBfY0Ga8ZJBc",
         authDomain: "gestao-de-horario.firebaseapp.com",
@@ -125,12 +124,10 @@
     const db = getDatabase(app);
     const dbRef = ref(db, 'horarios_quintino');
 
-    // SALVAMENTO AUTOMÁTICO
     window.saveAuto = function() {
         if(!window.isEditing) return;
         document.getElementById('cloudStatus').innerText = "🔄";
         
-        // Atualiza a legenda do dia atual antes de salvar
         if(!window.config[window.activeShift].legendasPorDia) window.config[window.activeShift].legendasPorDia = {};
         window.config[window.activeShift].legendasPorDia[window.activeDay] = document.getElementById("footerLegend").innerText;
 
@@ -146,7 +143,6 @@
         });
     };
 
-    // LEITURA EM TEMPO REAL
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
         if (data && data.config) {
@@ -164,7 +160,6 @@
     let searchTerm = "";
     let draggedData = null;
 
-    // Estrutura Inicial (Caso o Firebase esteja vazio)
     window.config = {
         manha: { aulas: [{l:"1ª",h:"07:10"},{l:"2ª",h:"08:00"},{l:"3ª",h:"08:50"},{l:"4ª",h:"10:00"},{l:"5ª",h:"10:50"}], turmas: ["1ºA","1ºB","2ºA"], data: {}, legendasPorDia: {} },
         tarde: { aulas: [{l:"1ª",h:"13:30"},{l:"2ª",h:"14:20"},{l:"3ª",h:"15:10"},{l:"4ª",h:"16:20"},{l:"5ª",h:"17:10"}], turmas: ["3ºA","4ºA","5ºA"], data: {}, legendasPorDia: {} }
@@ -174,107 +169,4 @@
         const img = document.getElementById("headerImg");
         img.src = window.activeShift === "manha" 
             ? "https://raw.githubusercontent.com/lenilsonxavier-dev/Hor-rio-Quintino-Bocaiuva-2026/main/frontquintinobocav.jpg"
-            : "https://raw.githubusercontent.com/lenilsonxavier-dev/Hor-rio-Quintino-Bocaiuva-2026/main/frontquirino.jpg";
-    }
-
-    window.openCalendar = () => {
-        const modal = document.getElementById('calendarModal');
-        const frame = document.getElementById('calFrame');
-        if(frame.src === "about:blank") frame.src = "https://lenilsonxavier-dev.github.io/Calendario-Escolar-2026/";
-        modal.style.display = 'block';
-    };
-
-    // --- LÓGICA DE RENDERIZAÇÃO ---
-    window.renderAll = function() {
-        atualizarCabecalho();
-        const shift = window.config[window.activeShift];
-        
-        document.getElementById("shiftTabs").innerHTML = ["manha", "tarde"].map(s => `<div class="tab ${window.activeShift===s?'active':''}" onclick="window.activeShift='${s}';window.renderAll()">${s.toUpperCase()}</div>`).join("");
-        document.getElementById("dayTabs").innerHTML = DIAS.map(d => `<div class="tab ${window.activeDay===d?'active':''}" onclick="window.activeDay='${d}';window.renderAll()">${d}</div>`).join("");
-
-        if(!shift.data[window.activeDay]) {
-            shift.data[window.activeDay] = Array(shift.aulas.length).fill().map(() => Array(shift.turmas.length).fill().map(() => ({teacher:"Livre", room:"---"})));
-        }
-
-        let html = `<div class="schedule-grid" style="grid-template-columns: 100px repeat(${shift.turmas.length}, minmax(120px, 1fr))">`;
-        html += `<div class="grid-header">Horários</div>`;
-        shift.turmas.forEach((t, i) => html += `<div class="grid-header" oncontextmenu="window.showMenu(event, 'col', ${i})" onclick="window.editTurma(${i})">${t}</div>`);
-        
-        shift.aulas.forEach((aula, aIdx) => {
-            html += `<div class="time-slot" oncontextmenu="window.showMenu(event, 'row', ${aIdx})" onclick="window.editHora(${aIdx})">${aula.l}<br>${aula.h}</div>`;
-            shift.turmas.forEach((_, tIdx) => {
-                const cell = shift.data[window.activeDay][aIdx][tIdx] || {teacher:"Livre", room:"---"};
-                let classes = "schedule-cell";
-                const prof = cell.teacher || "Livre";
-                
-                if (prof.includes('*')) classes += " cell-quebrada";
-                if (prof.toUpperCase().includes("HI")) classes += " cell-hi";
-                else if (prof.toUpperCase().includes("HL")) classes += " cell-hl";
-                if (searchTerm && prof.toUpperCase().includes(searchTerm.toUpperCase()) && prof !== "Livre") classes += " cell-highlight";
-
-                html += `<div class="${classes}" draggable="${window.isEditing}" ondragstart="handleDrag(event,${aIdx},${tIdx})" ondragover="event.preventDefault()" ondrop="handleDrop(event,${aIdx},${tIdx})" onclick="window.editCell(${aIdx},${tIdx})">
-                            <strong>${prof}</strong><small>${cell.room || "---"}</small>
-                         </div>`;
-            });
-        });
-        document.getElementById("scheduleGrid").innerHTML = html + `</div>`;
-        document.getElementById("footerLegend").innerText = (shift.legendasPorDia || {})[window.activeDay] || "⏱️ Digite os intervalos aqui...";
-    };
-
-    // --- CONTROLES DE EDIÇÃO ---
-    window.tryLogin = () => {
-        if(document.getElementById("passInput").value === "Professor Leno") {
-            window.isEditing = true;
-            document.body.classList.add("edit-mode");
-            document.getElementById("lockBtn").innerText = "🔓";
-            document.getElementById("lockBtn").classList.add("unlocked");
-            document.getElementById("footerLegend").contentEditable = "true";
-            document.getElementById("loginOverlay").style.display="none";
-            window.renderAll();
-        } else { alert("Senha incorreta!"); }
-    };
-
-    window.openLogin = () => { if(window.isEditing) location.reload(); else document.getElementById("loginOverlay").style.display="flex"; };
-
-    window.editCell = (a, t) => {
-        if(!window.isEditing) return;
-        const cell = window.config[window.activeShift].data[window.activeDay][a][t];
-        const p = prompt("Nome do Professor (use * para aula quebrada):", cell.teacher);
-        if(p !== null) {
-            cell.teacher = p || "Livre";
-            cell.room = prompt("Sala/Ambiente:", cell.room) || "---";
-            window.saveAuto(); window.renderAll();
-        }
-    };
-
-    window.showMenu = (e, type, idx) => {
-        if(!window.isEditing) return;
-        e.preventDefault();
-        const m = document.getElementById("contextMenu");
-        m.style.display="block"; m.style.left=e.pageX+"px"; m.style.top=e.pageY+"px";
-        m.innerHTML = type === 'col' 
-            ? `<div onclick="window.addCol(${idx})">➕ Adicionar Turma Direita</div><div onclick="window.delCol(${idx})" style="color:red">🗑️ Remover Turma</div>`
-            : `<div onclick="window.addRow(${idx})">➕ Adicionar Horário Abaixo</div><div onclick="window.delRow(${idx})" style="color:red">🗑️ Remover Horário</div>`;
-    };
-
-    // --- DRAG AND DROP ---
-    function handleDrag(e, a, t) { draggedData = { a, t, content: {...window.config[window.activeShift].data[window.activeDay][a][t]} }; }
-    function handleDrop(e, a, t) {
-        e.preventDefault();
-        const data = window.config[window.activeShift].data[window.activeDay];
-        if(!e.ctrlKey) data[draggedData.a][draggedData.t] = {teacher:"Livre", room:"---"};
-        data[a][t] = draggedData.content;
-        window.saveAuto(); window.renderAll();
-    }
-
-    // --- MANIPULAÇÃO DE ESTRUTURA ---
-    window.addCol = (i) => { window.config[window.activeShift].turmas.splice(i+1, 0, "Nova"); window.saveAuto(); window.renderAll(); };
-    window.delCol = (i) => { if(confirm("Remover coluna?")) { window.config[window.activeShift].turmas.splice(i, 1); window.saveAuto(); window.renderAll(); }};
-    window.addRow = (i) => { window.config[window.activeShift].aulas.splice(i+1, 0, {l:"Nª", h:"00:00"}); window.saveAuto(); window.renderAll(); };
-    window.delRow = (i) => { if(confirm("Remover horário?")) { window.config[window.activeShift].aulas.splice(i, 1); window.saveAuto(); window.renderAll(); }};
-
-    document.addEventListener("click", () => document.getElementById("contextMenu").style.display="none");
-    document.getElementById("teacherSearch").oninput = (e) => { searchTerm = e.target.value; window.renderAll(); };
-</script>
-</body>
-</html>
+            : "
