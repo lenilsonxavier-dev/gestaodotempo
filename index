@@ -8,60 +8,41 @@
         * { box-sizing: border-box; }
         body { background: #eef2f8; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; }
         .header-institucional { width: 100%; max-width: 1400px; margin: 0 auto 15px; display: flex; justify-content: center; background: white; padding: 10px; border-radius: 15px; }
-        .header-institucional img { width: 100%; max-width: 1200px; height: auto; border-radius: 10px; }
+        .header-institucional img { width: 100%; max-width: 1200px; height: auto; border-radius: 10px; min-height: 100px; background: #ddd; }
         .main-container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        
-        /* Toolbar e Busca */
         .toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; align-items: center; }
         .search-input { flex-grow: 1; padding: 12px 20px; border-radius: 40px; border: 2px solid #cbd5e1; outline: none; font-size: 16px; }
-        
-        /* Botões */
         .btn { border: none; padding: 10px 20px; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; transition: 0.3s; min-height: 44px; display: flex; align-items: center; justify-content: center; }
         .btn-navy { background: #1e3a5f; }
         .btn-orange { background: #f59e0b; }
         .btn-red { background: #ef4444; }
         .btn-lock { background: #64748b; font-size: 1.1rem; padding: 8px 15px; }
         .btn-lock.unlocked { background: #22c55e; }
-
-        /* Modal Calendário */
         #calendarModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 4000; padding: 20px; }
         .modal-content { background: white; width: 100%; height: 100%; border-radius: 20px; overflow: hidden; position: relative; }
         .close-calendar { position: absolute; top: 15px; right: 20px; background: #ef4444; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-weight: bold; z-index: 4001; }
-
-        /* Grid */
         .grid-wrapper { width: 100%; overflow-x: auto; border: 1px solid #cbd5e1; border-radius: 10px; }
         .schedule-grid { display: grid; background: white; font-size: 0.75rem; }
-        .grid-header, .time-slot { background: #f8fafc; font-weight: bold; text-align: center; padding: 8px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; min-height: 50px; }
-        .schedule-cell { border-bottom: 0.5px solid #e2e8f0; border-right: 0.5px solid #e2e8f0; padding: 8px; min-height: 80px; text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: pointer; transition: 0.2s; }
-        
-        /* Cores de Identificação */
-        .cell-quebrada { background-color: #fef9c3 !important; border: 1px solid #facc15 !important; }
+        .grid-header, .time-slot { background: #f8fafc; font-weight: bold; text-align: center; padding: 8px; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; min-height: 50px; }
+        .schedule-cell { border: 0.5px solid #e2e8f0; padding: 8px; min-height: 80px; text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: pointer; }
+        .cell-quebrada { background-color: #fef9c3 !important; }
         .cell-hi { background-color: #ffcfcf !important; border: 1.5px solid #ef4444 !important; }
         .cell-hl { background-color: #d1fae5 !important; border: 1.5px solid #10b981 !important; }
-        .cell-highlight { background-color: #bae6fd !important; font-weight: bold; transform: scale(1.02); z-index: 2; }
-
-        /* Abas */
+        .cell-highlight { background-color: #bae6fd !important; font-weight: bold; }
         .tabs-row { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; align-items: center; }
         .tab { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 40px; cursor: pointer; font-weight: 600; white-space: nowrap; }
         .tab.active { background: #1e3a5f; color: white; }
-
-        /* Login e Context Menu */
         #loginOverlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 5000; justify-content: center; align-items: center; }
         .login-box { background: white; padding: 30px; border-radius: 20px; width: 320px; text-align: center; }
         #contextMenu { display: none; position: absolute; background: white; border: 1px solid #ccc; box-shadow: 2px 2px 10px rgba(0,0,0,0.2); z-index: 3000; border-radius: 8px; overflow: hidden; }
-        #contextMenu div { padding: 12px 20px; cursor: pointer; font-size: 14px; }
-        #contextMenu div:hover { background: #f0f0f0; }
-
-        .footer-area { margin-top: 20px; padding: 15px; border-radius: 12px; background: #fffbeb; border: 2px dashed #f59e0b; font-weight: bold; min-height: 50px; outline: none; }
-        #cloudStatus { font-size: 1.2rem; margin-left: 10px; }
-        
-        @media print { .toolbar, .tabs-row, .btn, #lockBtn, .close-calendar { display: none !important; } }
+        #contextMenu div { padding: 12px 20px; cursor: pointer; }
+        .footer-area { margin-top: 20px; padding: 15px; border-radius: 12px; background: #fffbeb; border: 2px dashed #f59e0b; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="calendarModal">
-    <button class="close-calendar" onclick="document.getElementById('calendarModal').style.display='none'">✕</button>
+    <button class="close-calendar" onclick="window.closeCalendar()">✕</button>
     <div class="modal-content">
         <iframe id="calFrame" src="about:blank" style="width:100%; height:100%; border:none;"></iframe>
     </div>
@@ -72,9 +53,8 @@
 <div id="loginOverlay">
     <div class="login-box">
         <h3>Acesso Restrito</h3>
-        <input type="password" id="passInput" style="width:100%; padding:12px; margin:15px 0; border-radius:8px; border:1px solid #ddd;" placeholder="Digite a senha">
+        <input type="password" id="passInput" style="width:100%; padding:12px; margin:15px 0;" placeholder="Senha">
         <button class="btn btn-navy" style="width:100%" onclick="window.tryLogin()">Entrar</button>
-        <p style="font-size: 11px; color: #666; margin-top: 10px;">Dica: Nome do Professor</p>
     </div>
 </div>
 
@@ -84,26 +64,20 @@
 
 <div class="main-container">
     <div class="toolbar">
-        <input type="text" id="teacherSearch" class="search-input" placeholder="🔍 Localizar Professor no Horário...">
+        <input type="text" id="teacherSearch" class="search-input" placeholder="🔍 Localizar Professor...">
         <button id="lockBtn" class="btn btn-lock" onclick="window.openLogin()">🔒</button>
-        <button class="btn btn-red" onclick="window.print()">🖨️ Gerar PDF</button>
-        <span id="cloudStatus" title="Sincronização com Firebase">☁️</span>
+        <button class="btn btn-red" onclick="window.print()">🖨️ PDF</button>
+        <span id="cloudStatus">☁️</span>
     </div>
     
     <div class="tabs-row">
         <div id="shiftTabs" style="display:flex; gap:8px;"></div>
-        <button class="tab btn-orange" style="border:none; color:white;" onclick="window.openCalendar()">📅 Calendário Escolar</button>
+        <button class="tab btn-orange" onclick="window.openCalendar()">📅 Calendário Escolar</button>
     </div>
     
     <div class="tabs-row" id="dayTabs"></div>
-    
-    <div class="grid-wrapper">
-        <div id="scheduleGrid"></div>
-    </div>
-
-    <div class="footer-area" id="footerLegend" contenteditable="false" onblur="window.saveAuto()">
-        ⏱️ INTERVALOS...
-    </div>
+    <div class="grid-wrapper"><div id="scheduleGrid"></div></div>
+    <div class="footer-area" id="footerLegend" onblur="window.saveAuto()">⏱️ INTERVALOS...</div>
 </div>
 
 <script type="module">
@@ -127,28 +101,14 @@
     window.saveAuto = function() {
         if(!window.isEditing) return;
         document.getElementById('cloudStatus').innerText = "🔄";
-        
-        if(!window.config[window.activeShift].legendasPorDia) window.config[window.activeShift].legendasPorDia = {};
-        window.config[window.activeShift].legendasPorDia[window.activeDay] = document.getElementById("footerLegend").innerText;
-
-        set(dbRef, {
-            config: window.config,
-            lastUpdate: new Date().getTime()
-        }).then(() => {
-            document.getElementById('cloudStatus').innerText = "✅";
-            setTimeout(() => { document.getElementById('cloudStatus').innerText = "☁️"; }, 2000);
-        }).catch(err => {
-            console.error(err);
-            document.getElementById('cloudStatus').innerText = "❌";
-        });
+        set(dbRef, { config: window.config, lastUpdate: new Date().getTime() })
+        .then(() => { document.getElementById('cloudStatus').innerText = "✅"; })
+        .catch(() => { document.getElementById('cloudStatus').innerText = "❌"; });
     };
 
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
-        if (data && data.config) {
-            window.config = data.config;
-            if(!window.isEditing) window.renderAll();
-        }
+        if (data && data.config) { window.config = data.config; if(!window.isEditing) window.renderAll(); }
     });
 </script>
 
@@ -157,16 +117,64 @@
     window.isEditing = false;
     window.activeShift = "manha";
     window.activeDay = "Segunda";
-    let searchTerm = "";
-    let draggedData = null;
-
     window.config = {
         manha: { aulas: [{l:"1ª",h:"07:10"},{l:"2ª",h:"08:00"},{l:"3ª",h:"08:50"},{l:"4ª",h:"10:00"},{l:"5ª",h:"10:50"}], turmas: ["1ºA","1ºB","2ºA"], data: {}, legendasPorDia: {} },
         tarde: { aulas: [{l:"1ª",h:"13:30"},{l:"2ª",h:"14:20"},{l:"3ª",h:"15:10"},{l:"4ª",h:"16:20"},{l:"5ª",h:"17:10"}], turmas: ["3ºA","4ºA","5ºA"], data: {}, legendasPorDia: {} }
     };
 
-    function atualizarCabecalho() {
+    window.openCalendar = () => {
+        const modal = document.getElementById('calendarModal');
+        const frame = document.getElementById('calFrame');
+        const url = "https://lenilsonxavier-dev.github.io/gestaodotempo/calen.html";
+        if(frame.src !== url) frame.src = url;
+        modal.style.display = 'block';
+    };
+
+    window.closeCalendar = () => { document.getElementById('calendarModal').style.display = 'none'; };
+
+    window.renderAll = () => {
         const img = document.getElementById("headerImg");
-        img.src = window.activeShift === "manha" 
-            ? "https://raw.githubusercontent.com/lenilsonxavier-dev/Hor-rio-Quintino-Bocaiuva-2026/main/frontquintinobocav.jpg"
-            : "
+        img.src = window.activeShift === "manha" ? "https://raw.githubusercontent.com/lenilsonxavier-dev/Hor-rio-Quintino-Bocaiuva-2026/main/frontquintinobocav.jpg" : "https://raw.githubusercontent.com/lenilsonxavier-dev/Hor-rio-Quintino-Bocaiuva-2026/main/frontquirino.jpg";
+        
+        document.getElementById("shiftTabs").innerHTML = ["manha", "tarde"].map(s => `<div class="tab ${window.activeShift===s?'active':''}" onclick="window.activeShift='${s}';window.renderAll()">${s.toUpperCase()}</div>`).join("");
+        document.getElementById("dayTabs").innerHTML = DIAS.map(d => `<div class="tab ${window.activeDay===d?'active':''}" onclick="window.activeDay='${d}';window.renderAll()">${d}</div>`).join("");
+
+        const shift = window.config[window.activeShift];
+        if(!shift.data[window.activeDay]) shift.data[window.activeDay] = Array(shift.aulas.length).fill().map(() => Array(shift.turmas.length).fill().map(() => ({teacher:"Livre", room:"---"})));
+
+        let html = `<div class="schedule-grid" style="grid-template-columns: 100px repeat(${shift.turmas.length}, 1fr)">`;
+        html += `<div class="grid-header">Horários</div>`;
+        shift.turmas.forEach(t => html += `<div class="grid-header">${t}</div>`);
+        
+        shift.aulas.forEach((aula, aIdx) => {
+            html += `<div class="time-slot">${aula.l}<br>${aula.h}</div>`;
+            shift.turmas.forEach((_, tIdx) => {
+                const cell = shift.data[window.activeDay][aIdx][tIdx] || {teacher:"Livre", room:"---"};
+                html += `<div class="schedule-cell" onclick="window.editCell(${aIdx},${tIdx})"><strong>${cell.teacher}</strong><small>${cell.room}</small></div>`;
+            });
+        });
+        document.getElementById("scheduleGrid").innerHTML = html + `</div>`;
+    };
+
+    window.tryLogin = () => {
+        if(document.getElementById("passInput").value === "Professor Leno") {
+            window.isEditing = true;
+            document.getElementById("lockBtn").innerText = "🔓";
+            document.getElementById("loginOverlay").style.display="none";
+            window.renderAll();
+        } else { alert("Senha incorreta!"); }
+    };
+
+    window.openLogin = () => { if(window.isEditing) location.reload(); else document.getElementById("loginOverlay").style.display="flex"; };
+
+    window.editCell = (a, t) => {
+        if(!window.isEditing) return;
+        const cell = window.config[window.activeShift].data[window.activeDay][a][t];
+        const p = prompt("Professor:", cell.teacher);
+        if(p !== null) { cell.teacher = p || "Livre"; cell.room = prompt("Sala:", cell.room) || "---"; window.saveAuto(); window.renderAll(); }
+    };
+
+    window.onload = () => window.renderAll();
+</script>
+</body>
+</html>
