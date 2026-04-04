@@ -3,638 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Gestão do Tempo - Calendário Escolar 2026 | Professor Leno</title>
+    <title>Gestão do Tempo 2026 | Professor Leno</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
         :root {
             --cor-htp: #add8e6;
             --cor-mes-atual: #90ee90;
             --cor-feriado: #ff4500;
             --cor-conselho: #b39ddb;
             --cor-recesso: #ffb300;
-            --alerta-bg: #fff3cd;
         }
         body {
-            font-family: 'Segoe UI', 'Arial Narrow', Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #eef2f5;
             margin: 0;
-            padding: 15px;
+            padding: 10px;
             display: flex;
             justify-content: center;
         }
         .calendario-wrapper {
-            max-width: 1400px;
+            max-width: 1200px;
             width: 100%;
             background: white;
-            border-radius: 28px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
             overflow: hidden;
         }
-        /* CABEÇALHO CENTRALIZADO - PREFEITURA DE OSASCO */
+        /* CABEÇALHO INSTITUCIONAL OSASCO */
         .header-institucional {
             background: linear-gradient(135deg, #0a2f6c 0%, #1b4a8b 100%);
             color: white;
-            padding: 25px 20px 20px 20px;
+            padding: 20px;
             text-align: center;
-            border-bottom: 5px solid #ffb300;
+            border-bottom: 4px solid #ffb300;
         }
-        .prefeitura {
-            font-size: 0.85rem;
-            letter-spacing: 2px;
-            font-weight: 500;
-            opacity: 0.9;
-        }
-        .nome-cidade {
-            font-size: 2.2rem;
-            font-weight: 800;
-            line-height: 1.2;
-            margin: 5px 0 0;
-            letter-spacing: -0.5px;
-        }
-        .slogan {
-            font-size: 0.85rem;
-            font-style: italic;
-            font-weight: 300;
-            margin-top: 5px;
-        }
-        .gestao-tempo {
-            margin-top: 12px;
-        }
+        .prefeitura { font-size: 0.75rem; letter-spacing: 2px; font-weight: 500; opacity: 0.9; }
+        .nome-cidade { font-size: 1.8rem; font-weight: 800; margin: 2px 0; }
         .gestao-tempo h2 {
-            font-size: 1.8rem;
-            margin: 0;
-            font-weight: 700;
+            font-size: 1.5rem;
+            margin: 10px 0 0;
             background: linear-gradient(120deg, #ffb300, #ffdd77);
-            background-clip: text;
             -webkit-background-clip: text;
-            color: transparent;
-            text-shadow: none;
-        }
-        .secretaria {
-            font-size: 0.8rem;
-            font-weight: 500;
-            margin-top: 4px;
-            letter-spacing: 1px;
-        }
-        .divisor-ouro {
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #ffb300, #ffdd77, #ffb300, transparent);
-            width: 60%;
-            margin: 12px auto 0;
-        }
-        .unidade-editavel {
-            margin-top: 14px;
+            -webkit-text-fill-color: transparent;
         }
         .unidade-editavel input {
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.5);
-            border-radius: 40px;
-            padding: 8px 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            padding: 6px 15px;
             color: white;
-            font-weight: bold;
-            width: 60%;
+            width: 80%;
             text-align: center;
-            backdrop-filter: blur(4px);
-            font-size: 0.9rem;
+            margin-top: 10px;
         }
-        .unidade-editavel input::placeholder {
-            color: rgba(255,255,255,0.7);
-        }
-        /* Navegação mensal */
+
+        /* NAVEGAÇÃO */
         .nav-mes {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: #2c3e50;
-            padding: 8px 25px;
+            padding: 10px 20px;
             color: white;
         }
         .nav-btn {
             background: #f1c40f;
             border: none;
-            font-size: 1.6rem;
-            width: 44px;
-            height: 44px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             cursor: pointer;
             font-weight: bold;
-            transition: 0.2s;
         }
-        .nav-btn:hover { background: #e67e22; transform: scale(1.03);}
-        .mes-ano-titulo {
-            font-size: 1.6rem;
-            font-weight: bold;
-            background: #1e2f3e;
-            padding: 5px 20px;
-            border-radius: 40px;
-        }
-        /* Grade do calendário */
-        .grade-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-        }
+
+        /* GRADE */
+        .grade-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         .grade-table th, .grade-table td {
-            border: 1px solid #b0bec5;
+            border: 1px solid #dee2e6;
             vertical-align: top;
-            height: 100px;
-            width: 12%;
-            background-color: white;
-        }
-        .grade-table th {
-            background: #cfd8dc;
-            font-size: 0.85rem;
-            height: 32px;
-        }
-        .cell-day {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
+            height: 90px;
             position: relative;
         }
+        .grade-table th { background: #f8f9fa; font-size: 0.7rem; height: 30px; }
+        
         .day-number {
             font-weight: bold;
-            font-size: 1rem;
-            background: rgba(0,0,0,0.05);
-            width: 28px;
-            text-align: center;
-            border-radius: 20px;
-            margin: 4px;
+            padding: 2px 6px;
+            font-size: 0.9rem;
+            display: inline-block;
         }
         .agenda-text {
             font-size: 10px;
-            line-height: 1.3;
-            padding: 6px 4px;
-            min-height: 65px;
+            padding: 2px 5px;
+            height: 60px;
             overflow-y: auto;
             outline: none;
-            cursor: text;
-            border-radius: 6px;
-            background: #fef9e6;
-            transition: 0.1s;
+            word-wrap: break-word;
         }
-        .agenda-text:focus {
-            background: #fff3c9;
-            box-shadow: inset 0 0 0 2px #f39c12;
-        }
-        /* Indicador de notificação agendada */
-        .notif-badge {
-            position: absolute;
-            bottom: 2px;
-            left: 4px;
-            font-size: 9px;
-            background: #e74c3c;
-            color: white;
-            border-radius: 20px;
-            padding: 1px 5px;
-            font-weight: bold;
-            pointer-events: none;
-        }
-        /* Cores temáticas */
+
+        /* CORES EVENTOS */
         .htp-bg { background-color: var(--cor-htp) !important; }
-        .mes-destaque { background-color: var(--cor-mes-atual) !important; }
         .feriado-bg { background-color: var(--cor-feriado) !important; color: white; }
         .conselho-bg { background-color: var(--cor-conselho) !important; }
         .recesso-bg { background-color: var(--cor-recesso) !important; }
-        .domingo-bg { background-color: #f8e8e8 !important; }
-        .sabado-bg { background-color: #e8f0fe !important; }
-        
+        .domingo-bg { background-color: #ffebee; }
+        .sabado-bg { background-color: #e3f2fd; }
+
+        .notif-badge { position: absolute; top: 2px; right: 2px; font-size: 10px; }
+
         .legenda-painel {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
-            background: #f4f6f9;
-            padding: 8px 20px;
-            border-top: 1px solid #ccc;
-            font-size: 11px;
+            gap: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            font-size: 10px;
             justify-content: center;
+            border-top: 1px solid #ddd;
         }
-        .info-panel {
-            background: #e9ecef;
-            padding: 12px 20px;
-            text-align: center;
-            border-top: 2px solid #cbd5e0;
-        }
-        .card-config {
-            background: white;
-            border-radius: 20px;
-            padding: 8px 16px;
-            display: inline-block;
-            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
-        }
+
         .btn-acao {
-            background: #2c3e50;
-            color: white;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: bold;
-            margin: 3px;
+            background: #2c3e50; color: white; border: none; padding: 5px 12px;
+            border-radius: 15px; cursor: pointer; font-size: 11px; margin: 2px;
         }
-        .btn-alarme {
-            background: #e67e22;
-        }
-        .notif-info {
-            background: #d4edda;
-            border-radius: 16px;
-            padding: 6px 12px;
-            font-size: 11px;
-            display: inline-block;
-            margin-left: 15px;
-        }
-        @media print {
-            .nav-mes, .btn-acao, .info-panel .btn-acao, .legenda-painel .btn-acao { display: none; }
-        }
+
+        @media print { .nav-mes, .btn-acao, .legenda-painel { display: none !important; } }
     </style>
 </head>
 <body>
+
 <div class="calendario-wrapper">
-    <!-- CABEÇALHO CENTRALIZADO -->
     <div class="header-institucional">
         <div class="prefeitura">PREFEITURA DE</div>
         <div class="nome-cidade">OSASCO</div>
-        <div class="slogan">CIDADE DA FAMÍLIA E QUE ABRAÇA</div>
         <div class="gestao-tempo">
             <h2>Gestão do Tempo</h2>
-            <div class="secretaria">Secretaria de Educação</div>
+            <div style="font-size: 0.7rem; opacity: 0.8;">Secretaria de Educação</div>
         </div>
-        <div class="divisor-ouro"></div>
         <div class="unidade-editavel">
-            <input type="text" id="unidadeNome" value="PROFESSOR LENO - E.M. QUINTINO BOCAIUVA" placeholder="NOME DA UNIDADE EDUCACIONAL">
+            <input type="text" id="unidadeNome" placeholder="NOME DA UNIDADE">
         </div>
     </div>
 
-    <!-- BARRA DE NAVEGAÇÃO MENSAL -->
     <div class="nav-mes">
-        <button class="nav-btn" id="btnPrev">◀</button>
-        <div class="mes-ano-titulo" id="mesTitle">ABRIL 2026</div>
-        <button class="nav-btn" id="btnNext">▶</button>
+        <button class="nav-btn" onclick="mudarMes(-1)">◀</button>
+        <div id="mesTitle" style="font-weight: bold; font-size: 1.2rem;"></div>
+        <button class="nav-btn" onclick="mudarMes(1)">▶</button>
     </div>
 
-    <!-- GRADE DO CALENDÁRIO -->
-    <table class="grade-table" id="calendarGrid">
+    <table class="grade-table">
         <thead><tr id="weekRow"></tr></thead>
         <tbody id="calendarBody"></tbody>
     </table>
 
-    <!-- LEGENDA -->
     <div class="legenda-painel">
-        <span>🔵 HTP (Ter/Qui)</span> <span>🟢 Mês atual</span> <span>🔴 Feriado</span> 
-        <span>🟣 Conselho/Reunião</span> <span>🟡 Recesso</span>
-        <span>🔔 Notificações: 1 semana antes + dia do evento (HTPc, Reuniões, Conselhos, etc)</span>
-    </div>
-
-    <!-- PAINEL DE INFORMAÇÕES -->
-    <div class="info-panel">
-        <div class="card-config">
-            <strong>⏰ SISTEMA DE NOTIFICAÇÕES INTELIGENTES</strong><br>
-            <span style="font-size:12px">🔔 <strong>HTPc</strong> (5 min antes) | <strong>Reunião de pais, Reunião com gestor, Conselho de classe, Parada pedagógica, Atendimento aos pais</strong> → Notificação 7 dias antes e no dia do evento.</span>
-            <div class="notif-info">✅ As notificações serão exibidas e com alerta sonoro quando a data chegar. Agenda automática ao digitar as palavras-chave.</div>
-            <button class="btn-acao btn-alarme" id="testNotifBtn">🔊 Testar Alerta Sonoro</button>
-            <button class="btn-acao" onclick="window.print()">🖨️ Imprimir</button>
-            <button class="btn-acao" id="resetAgendaMesBtn">🗑️ Resetar agendas mês</button>
-        </div>
+        <span>🔵 HTP (T/Q)</span> <span>🔴 Feriado</span> <span>🟣 Conselho</span> <span>🟡 Recesso</span>
+        <button class="btn-acao" onclick="window.print()">🖨️ Imprimir PDF</button>
+        <button class="btn-acao" onclick="testarAudio()">🔊 Testar Som</button>
     </div>
 </div>
 
 <script>
-    // ==================  CONFIGURAÇÕES GLOBAIS  ==================
     let anoAtual = 2026;
-    let mesAtual = 3;   // Abril
-    
-    // Mapeamento de agendas
-    let agendaStorage = new Map(); // key "YYYY-MM-DD" -> texto
-    
-    // Estrutura para armazenar notificações já disparadas (evitar duplicidade)
-    let notificacoesDisparadas = new Set(); // chave "tipo-data" ou "previa-data"
-    
-    // Palavras-chave e seus tipos de notificação
-    const tiposEventos = [
-        { keywords: ["HTPC", "HTPc", "htpc"], tipo: "htpc", alertaPrevioMin: 5, notificarSemanaAntes: false, nomeExibicao: "HTPc" },
-        { keywords: ["REUNIÃO DE PAIS", "REUNIAO DE PAIS"], tipo: "reuniao_pais", alertaPrevioMin: 0, notificarSemanaAntes: true, nomeExibicao: "Reunião de Pais" },
-        { keywords: ["REUNIÃO COM GESTOR", "REUNIAO COM GESTOR"], tipo: "reuniao_gestor", alertaPrevioMin: 0, notificarSemanaAntes: true, nomeExibicao: "Reunião com Gestor" },
-        { keywords: ["CONSELHO DE CLASSE"], tipo: "conselho_classe", alertaPrevioMin: 0, notificarSemanaAntes: true, nomeExibicao: "Conselho de Classe" },
-        { keywords: ["PARADA PEDAGÓGICA", "PARADA PEDAGOGICA"], tipo: "parada_pedagogica", alertaPrevioMin: 0, notificarSemanaAntes: true, nomeExibicao: "Parada Pedagógica" },
-        { keywords: ["ATENDIMENTO AOS PAIS", "ATENDIMENTO AOS RESPONSÁVEIS"], tipo: "atendimento_pais", alertaPrevioMin: 0, notificarSemanaAntes: true, nomeExibicao: "Atendimento aos Pais" }
-    ];
-    
-    // Armazenamento de timeouts ativos para limpeza
-    let activeTimeouts = [];
-    
-    // Dias da semana e meses
-    const weekDays = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"];
+    let mesAtual = 3; // Abril
     const mesesNomes = ["JANEIRO","FEVEREIRO","MARÇO","ABRIL","MAIO","JUNHO","JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"];
+    const weekDays = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SAB"];
     
-    // Eventos fixos (feriados, conselhos base)
-    const eventosFixos = new Map();
-    function loadEventosFixos() {
-        const feriadosList = ["4-21","10-15","4-1","8-7","11-25","0-1"];
-        feriadosList.forEach(f => eventosFixos.set(f, "feriado"));
-        eventosFixos.set("3-27","conselho"); eventosFixos.set("3-28","conselho");
-        eventosFixos.set("2-15","conselho"); eventosFixos.set("6-10","conselho");
-        eventosFixos.set("0-25","recesso");
-    }
-    loadEventosFixos();
-    
-    // Função de áudio (beep)
-    function playBeep(frequency=880, duration=0.3) {
-        try {
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.type = "sine";
-            osc.frequency.value = frequency;
-            gain.gain.value = 0.25;
-            osc.start();
-            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
-            osc.stop(audioCtx.currentTime + duration);
-            audioCtx.resume().catch(e=>console.log);
-        } catch(e) { console.warn("áudio não suportado"); }
-    }
-    
-    // Exibir notificação visual e sonora
-    function exibirNotificacao(mensagem, tipo, dataStr) {
-        playBeep(880, 0.4);
-        const notifDiv = document.createElement("div");
-        notifDiv.innerText = `🔔 ${mensagem} - ${dataStr}`;
-        notifDiv.style.position = "fixed";
-        notifDiv.style.bottom = "20px";
-        notifDiv.style.right = "20px";
-        notifDiv.style.backgroundColor = "#e67e22";
-        notifDiv.style.color = "white";
-        notifDiv.style.padding = "12px 20px";
-        notifDiv.style.borderRadius = "40px";
-        notifDiv.style.zIndex = "9999";
-        notifDiv.style.fontWeight = "bold";
-        notifDiv.style.boxShadow = "0 4px 12px black";
-        notifDiv.style.fontSize = "14px";
-        document.body.appendChild(notifDiv);
-        setTimeout(() => notifDiv.remove(), 6000);
-        console.log(`NOTIFICAÇÃO: ${mensagem} em ${dataStr}`);
-    }
-    
-    // Agendar notificação para um horário específico
-    function agendarNotificacao(dataAlvo, mensagem, tipo, dataStr, isPreviaSemana = false) {
-        const agora = new Date();
-        const tempoRestante = dataAlvo.getTime() - agora.getTime();
-        if (tempoRestante > 0) {
-            const timeoutId = setTimeout(() => {
-                const chaveUnica = `${tipo}-${dataStr}${isPreviaSemana ? "-prev" : ""}`;
-                if (!notificacoesDisparadas.has(chaveUnica)) {
-                    notificacoesDisparadas.add(chaveUnica);
-                    exibirNotificacao(mensagem, tipo, dataStr);
-                }
-            }, tempoRestante);
-            activeTimeouts.push(timeoutId);
-        } else if (tempoRestante <= 0 && tempoRestante > -60000) {
-            // Se já passou menos de 1 minuto, dispara imediatamente
-            const chaveUnica = `${tipo}-${dataStr}${isPreviaSemana ? "-prev" : ""}`;
-            if (!notificacoesDisparadas.has(chaveUnica)) {
-                notificacoesDisparadas.add(chaveUnica);
-                exibirNotificacao(mensagem, tipo, dataStr);
-            }
-        }
-    }
-    
-    // Processa um texto de agenda e agenda notificações baseadas nas palavras-chave
-    function processarNotificacoesParaData(dataObj, textoAgenda, dataStr) {
-        if (!textoAgenda || textoAgenda.trim() === "") return;
-        const textoUpper = textoAgenda.toUpperCase();
-        
-        for (let evento of tiposEventos) {
-            const encontrou = evento.keywords.some(kw => textoUpper.includes(kw.toUpperCase()));
-            if (encontrou) {
-                const ano = dataObj.getFullYear();
-                const mes = dataObj.getMonth();
-                const dia = dataObj.getDate();
-                
-                // Para HTPc: notificação 5 minutos antes do horário padrão (12:00 e 18:20)
-                if (evento.tipo === "htpc") {
-                    // Horários fixos: 12:00 e 18:20
-                    const horarios = ["12:00", "18:20"];
-                    horarios.forEach(horario => {
-                        const [h, m] = horario.split(":").map(Number);
-                        const dataHoraEvento = new Date(ano, mes, dia, h, m, 0);
-                        const minutosAntes = evento.alertaPrevioMin; // 5 minutos
-                        const dataAlerta = new Date(dataHoraEvento.getTime() - (minutosAntes * 60 * 1000));
-                        const mensagem = `⏰ ${evento.nomeExibicao} em ${dia}/${mes+1}/${ano} às ${horario} (início em ${minutosAntes} minutos)`;
-                        agendarNotificacao(dataAlerta, mensagem, evento.tipo, dataStr, false);
-                    });
-                } 
-                // Para outros eventos: notificação 7 dias antes E no dia do evento (00:00)
-                else if (evento.notificarSemanaAntes) {
-                    // Notificação 7 dias antes (mesmo horário aproximado 08:00 da manhã)
-                    const dataSemanaAntes = new Date(ano, mes, dia - 7, 8, 0, 0);
-                    if (dataSemanaAntes >= new Date()) {
-                        const mensagemPrev = `📅 LEMBRETE: ${evento.nomeExibicao} acontecerá em ${dia}/${mes+1}/${ano} (daqui 7 dias)`;
-                        agendarNotificacao(dataSemanaAntes, mensagemPrev, evento.tipo, dataStr, true);
-                    }
-                    // Notificação no dia do evento às 07:00 (início do dia)
-                    const dataDiaEvento = new Date(ano, mes, dia, 7, 0, 0);
-                    const mensagemDia = `🔔 HOJE: ${evento.nomeExibicao} - ${dia}/${mes+1}/${ano}. Não esqueça!`;
-                    agendarNotificacao(dataDiaEvento, mensagemDia, evento.tipo, dataStr, false);
-                }
-            }
-        }
-    }
-    
-    // Limpar todos os timeouts e reiniciar notificações para o mês atual
-    function limparTodasNotificacoes() {
-        for (let tid of activeTimeouts) clearTimeout(tid);
-        activeTimeouts = [];
-        notificacoesDisparadas.clear();
-    }
-    
-    // Reagendar todas as notificações baseado nas agendas do mês atual
-    function reagendarNotificacoesParaMes() {
-        limparTodasNotificacoes();
-        const daysInMonth = new Date(anoAtual, mesAtual+1, 0).getDate();
-        for (let d=1; d<=daysInMonth; d++) {
-            const data = new Date(anoAtual, mesAtual, d);
-            if (data.getMonth() === mesAtual) {
-                const dataStr = `${anoAtual}-${String(mesAtual+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const textoAgenda = agendaStorage.get(dataStr) || "";
-                if (textoAgenda.trim() !== "") {
-                    processarNotificacoesParaData(data, textoAgenda, dataStr);
-                }
-            }
-        }
-    }
-    
-    // Salvar agenda e reagendar notificações
-    function setAgendaTexto(year, month, day, text, updateRender=true) {
-        const key = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-        agendaStorage.set(key, text);
-        if (updateRender) {
-            renderCalendar(year, month);
-            // Reconfigurar notificações globais após edição
-            reagendarNotificacoesParaMes();
-        }
-    }
-    
-    function getAgendaTexto(year, month, day) {
-        const key = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-        return agendaStorage.get(key) || "";
-    }
-    
-    // Resetar agendas do mês
-    function resetAgendasMes() {
-        const days = new Date(anoAtual, mesAtual+1, 0).getDate();
-        for(let d=1; d<=days; d++) {
-            const key = `${anoAtual}-${String(mesAtual+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            agendaStorage.delete(key);
-        }
-        renderCalendar(anoAtual, mesAtual);
-        reagendarNotificacoesParaMes();
-        playBeep(700,0.1);
-    }
-    
-    // Renderização do calendário
-    function renderCalendar(year, month) {
-        const tbody = document.getElementById("calendarBody");
-        tbody.innerHTML = "";
-        const firstDay = new Date(year, month, 1);
-        const startWeekday = firstDay.getDay();
-        const daysInMonth = new Date(year, month+1, 0).getDate();
-        let row = document.createElement("tr");
-        for(let i=0; i<startWeekday; i++) {
-            let empty = document.createElement("td");
-            empty.style.background = "#f1f3f5";
-            row.appendChild(empty);
-        }
-        
-        for(let d=1; d<=daysInMonth; d++) {
-            const dateObj = new Date(year, month, d);
-            const weekday = dateObj.getDay();
-            const dataKey = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const agendaText = getAgendaTexto(year, month, d);
-            
-            // Classes de estilo
-            let cellClass = "";
-            if(month === mesAtual && year === anoAtual) cellClass += "mes-destaque ";
-            if(weekday === 2 || weekday === 4) cellClass += "htp-bg ";
-            const mesDiaKey = `${month}-${d}`;
-            if(eventosFixos.has(mesDiaKey)) {
-                let tipo = eventosFixos.get(mesDiaKey);
-                if(tipo === "feriado") cellClass += "feriado-bg ";
-                else if(tipo === "conselho") cellClass += "conselho-bg ";
-                else if(tipo === "recesso") cellClass += "recesso-bg ";
-            }
-            if(weekday === 0) cellClass += "domingo-bg ";
-            if(weekday === 6) cellClass += "sabado-bg ";
-            
-            const td = document.createElement("td");
-            td.className = cellClass;
-            const cellDiv = document.createElement("div");
-            cellDiv.className = "cell-day";
-            const daySpan = document.createElement("div");
-            daySpan.className = "day-number";
-            daySpan.innerText = d;
-            const agendaDiv = document.createElement("div");
-            agendaDiv.className = "agenda-text";
-            agendaDiv.setAttribute("contenteditable", "true");
-            agendaDiv.innerText = agendaText;
-            
-            agendaDiv.addEventListener("blur", (function(dia, mesRef, anoRef) {
-                return function() {
-                    const newText = agendaDiv.innerText.trim();
-                    setAgendaTexto(anoRef, mesRef, dia, newText, true);
-                };
-            })(d, month, year));
-            
-            cellDiv.appendChild(daySpan);
-            cellDiv.appendChild(agendaDiv);
-            
-            // Verificar se há alguma notificação ativa para exibir badge (apenas indicador visual)
-            const temNotificacao = tiposEventos.some(ev => 
-                ev.keywords.some(kw => agendaText.toUpperCase().includes(kw.toUpperCase()))
-            );
-            if (temNotificacao) {
-                const badge = document.createElement("div");
-                badge.className = "notif-badge";
-                badge.innerText = "🔔";
-                badge.title = "Notificações agendadas (7 dias antes e no dia)";
-                cellDiv.appendChild(badge);
-            }
-            
-            td.appendChild(cellDiv);
-            row.appendChild(td);
-            const totalCells = startWeekday + d;
-            if(totalCells % 7 === 0 && d !== daysInMonth) {
-                tbody.appendChild(row);
-                row = document.createElement("tr");
-            }
-        }
-        const lastDayWeek = new Date(year, month, daysInMonth).getDay();
-        const rem = 6 - lastDayWeek;
-        for(let i=0; i<rem; i++) {
-            let empty = document.createElement("td");
-            empty.style.background = "#f1f3f5";
-            row.appendChild(empty);
-        }
-        tbody.appendChild(row);
-        document.getElementById("mesTitle").innerText = `${mesesNomes[month]} ${year}`;
-    }
-    
-    // Navegação entre meses
+    // Carregar dados salvos ou iniciar vazio
+    let agendaStorage = JSON.parse(localStorage.getItem('agenda_leno_2026')) || {};
+
+    const eventosFixos = {
+        "3-21": "feriado", "4-1": "feriado", "3-27": "conselho", "3-28": "conselho"
+    };
+
     function mudarMes(delta) {
-        let novoMes = mesAtual + delta;
-        let novoAno = anoAtual;
-        if(novoMes < 0) { novoMes = 11; novoAno--; }
-        if(novoMes > 11) { novoMes = 0; novoAno++; }
-        if(novoAno < 2026) novoAno = 2026;
-        if(novoAno > 2027) novoAno = 2027;
-        anoAtual = novoAno;
-        mesAtual = novoMes;
-        renderCalendar(anoAtual, mesAtual);
-        reagendarNotificacoesParaMes();
+        mesAtual += delta;
+        if(mesAtual > 11) { mesAtual = 0; anoAtual++; }
+        if(mesAtual < 0) { mesAtual = 11; anoAtual--; }
+        render();
     }
-    
-    // Teste de alerta sonoro
-    function testarAlerta() {
-        playBeep(1000, 0.4);
-        alert("🔊 Teste de notificação sonora! O sistema de alertas está ativo.");
+
+    function salvar(dia, texto) {
+        const key = `${anoAtual}-${mesAtual}-${dia}`;
+        agendaStorage[key] = texto;
+        localStorage.setItem('agenda_leno_2026', JSON.stringify(agendaStorage));
+        verificarAlertas(texto, dia);
     }
-    
-    // Inicialização do cabeçalho da semana
-    function inicializarCabecalho() {
-        const headerRow = document.getElementById("weekRow");
-        headerRow.innerHTML = "";
-        weekDays.forEach(day => { let th = document.createElement("th"); th.innerText = day; headerRow.appendChild(th); });
+
+    function verificarAlertas(texto, dia) {
+        const t = texto.toUpperCase();
+        if(t.includes("HTPC") || t.includes("REUNIÃO") || t.includes("CONSELHO")) {
+            // Se o texto contém palavra-chave, renderiza o badge de sino
+            render(); 
+        }
     }
-    
-    // Carregar exemplos de agenda para demonstração
-    function carregarAgendasDemo() {
-        setAgendaTexto(2026, 3, 10, "HTPc - Formação docente (12h e 18:20)", true);
-        setAgendaTexto(2026, 3, 14, "CONSELHO DE CLASSE - 13h", true);
-        setAgendaTexto(2026, 3, 17, "REUNIÃO DE PAIS - 19h", true);
-        setAgendaTexto(2026, 4, 5, "ATENDIMENTO AOS PAIS", true);
-        setAgendaTexto(2026, 4, 20, "REUNIÃO COM GESTOR e PARADA PEDAGÓGICA", true);
-        setAgendaTexto(2026, 4, 25, "HTPc - Planejamento", true);
-        renderCalendar(anoAtual, mesAtual);
+
+    function testarAudio() {
+        const ctx = new AudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        osc.start(); gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.5);
+        setTimeout(() => osc.stop(), 500);
     }
-    
-    // Eventos e inicialização
-    function bindControls() {
-        document.getElementById("btnPrev").addEventListener("click", () => mudarMes(-1));
-        document.getElementById("btnNext").addEventListener("click", () => mudarMes(1));
-        document.getElementById("testNotifBtn").addEventListener("click", testarAlerta);
-        document.getElementById("resetAgendaMesBtn").addEventListener("click", () => { if(confirm("Resetar todas as agendas do mês atual?")) resetAgendasMes(); });
+
+    function render() {
+        const tbody = document.getElementById("calendarBody");
+        const title = document.getElementById("mesTitle");
+        tbody.innerHTML = "";
+        title.innerText = `${mesesNomes[mesAtual]} ${anoAtual}`;
+
+        const primeiroDia = new Date(anoAtual, mesAtual, 1).getDay();
+        const diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
+
+        let data = 1;
+        for (let i = 0; i < 6; i++) {
+            let row = document.createElement("tr");
+            for (let j = 0; j < 7; j++) {
+                let cell = document.createElement("td");
+                if (i === 0 && j < primeiroDia) {
+                    cell.style.background = "#f0f0f0";
+                } else if (data > diasNoMes) {
+                    cell.style.background = "#f0f0f0";
+                } else {
+                    const d = data;
+                    const key = `${anoAtual}-${mesAtual}-${d}`;
+                    const texto = agendaStorage[key] || "";
+                    
+                    // Lógica de Cores
+                    if(j === 0) cell.className = "domingo-bg";
+                    if(j === 6) cell.className = "sabado-bg";
+                    if(j === 2 || j === 4) cell.classList.add("htp-bg");
+                    if(eventosFixos[`${mesAtual}-${d}`]) cell.classList.add(eventosFixos[`${mesAtual}-${d}`] + "-bg");
+
+                    cell.innerHTML = `
+                        <div class="day-number">${d}</div>
+                        ${texto.toUpperCase().includes("HTPC") || texto.toUpperCase().includes("REUNIÃO") ? '<span class="notif-badge">🔔</span>' : ''}
+                        <div class="agenda-text" contenteditable="true" onblur="salvar(${d}, this.innerText)">${texto}</div>
+                    `;
+                    data++;
+                }
+                row.appendChild(cell);
+            }
+            tbody.appendChild(row);
+            if (data > diasNoMes) break;
+        }
     }
+
+    // Inicialização
+    const headerRow = document.getElementById("weekRow");
+    weekDays.forEach(d => headerRow.innerHTML += `<th>${d}</th>`);
     
-    function init() {
-        inicializarCabecalho();
-        carregarAgendasDemo();
-        bindControls();
-        reagendarNotificacoesParaMes();
-    }
-    
-    init();
+    document.getElementById("unidadeNome").value = localStorage.getItem('unidade_leno') || "E.M. QUINTINO BOCAIUVA";
+    document.getElementById("unidadeNome").onblur = (e) => localStorage.setItem('unidade_leno', e.target.value);
+
+    render();
 </script>
+
 </body>
 </html>
