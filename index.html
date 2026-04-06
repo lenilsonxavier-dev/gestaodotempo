@@ -7,8 +7,9 @@
     <style>
         * { box-sizing: border-box; }
         body { background: #eef2f8; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; }
-        .header-institucional { width: 100%; max-width: 1400px; margin: 0 auto 15px; display: flex; justify-content: center; background: white; padding: 10px; border-radius: 15px; }
+        .header-institucional { width: 100%; max-width: 1400px; margin: 0 auto 15px; display: flex; justify-content: center; background: white; padding: 10px; border-radius: 15px; flex-direction: column; align-items: center; }
         .header-institucional img { width: 100%; max-width: 1200px; height: auto; border-radius: 10px; }
+        .editable-header { width: 100%; max-width: 1200px; margin-top: 10px; text-align: center; font-size: 1.2rem; font-weight: bold; background: #f0f7ff; padding: 12px; border-radius: 10px; border: 2px solid #1e3a5f; outline: none; cursor: text; }
         .main-container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
         .toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; align-items: center; }
         .search-input { flex-grow: 1; padding: 12px 20px; border-radius: 40px; border: 2px solid #cbd5e1; outline: none; font-size: 16px; }
@@ -25,6 +26,8 @@
         .cell-hi { background-color: #ffcfcf !important; border: 1.5px solid #ef4444 !important; }
         .cell-hl { background-color: #d1fae5 !important; border: 1.5px solid #10b981 !important; }
         .cell-highlight { background-color: #bae6fd !important; font-weight: bold; }
+        .cell-leno { background-color: #3b82f6 !important; color: white !important; font-weight: bold; border: 2px solid #1e3a5f !important; }
+        .cell-leno small { color: #e0f2fe !important; }
         .tabs-row { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; align-items: center; }
         .tab { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 40px; cursor: pointer; font-weight: 600; white-space: nowrap; }
         .tab.active { background: #1e3a5f; color: white; }
@@ -36,7 +39,7 @@
         #loginOverlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 5000; justify-content: center; align-items: center; }
         .login-box { background: white; padding: 30px; border-radius: 20px; width: 320px; text-align: center; }
         .footer-area { margin-top: 20px; padding: 15px; border-radius: 12px; background: #fffbeb; border: 2px dashed #f59e0b; font-weight: bold; min-height: 50px; outline: none; }
-        @media print { .toolbar, .tabs-row, .btn, #lockBtn, .close-calendar { display: none !important; } }
+        @media print { .toolbar, .tabs-row, .btn, .close-calendar, .editable-header { display: none !important; } }
     </style>
 </head>
 <body>
@@ -56,7 +59,10 @@
     </div>
 </div>
 
-<div class="header-institucional"><img id="headerImg" src=""></div>
+<div class="header-institucional">
+    <img id="headerImg" src="">
+    <div id="editableHeader" class="editable-header" contenteditable="false" onblur="window.saveHeaderAuto()">PROFESSOR LENO - E.M. QUINTINO BOCAIUVA</div>
+</div>
 
 <div class="main-container">
     <div class="toolbar">
@@ -73,7 +79,7 @@
     
     <div class="tabs-row" id="dayTabs"></div>
     <div class="grid-wrapper"><div id="scheduleGrid"></div></div>
-    <div class="footer-area" id="footerLegend" contenteditable="false" onblur="window.saveAuto()">⏱️ INTERVALOS...</div>
+    <div class="footer-area" id="footerLegend" contenteditable="false" onblur="window.saveFooterAuto()">⏱️ INTERVALOS...</div>
 </div>
 
 <script type="module">
@@ -94,19 +100,47 @@
     const db = getDatabase(app);
     const dbRef = ref(db, 'horarios_quintino');
 
-    window.saveAuto = function() {
+    window.saveFooterAuto = function() {
         if(!window.isEditing) return;
         document.getElementById('cloudStatus').innerText = "🔄";
         if(!window.config[window.activeShift].legendasPorDia) window.config[window.activeShift].legendasPorDia = {};
         window.config[window.activeShift].legendasPorDia[window.activeDay] = document.getElementById("footerLegend").innerText;
-        set(dbRef, { config: window.config, lastUpdate: new Date().getTime() })
-        .then(() => { document.getElementById('cloudStatus').innerText = "✅"; setTimeout(()=>document.getElementById('cloudStatus').innerText="☁️", 2000); });
+        saveToFirebase();
     };
+
+    window.saveHeaderAuto = function() {
+        if(!window.isEditing) return;
+        document.getElementById('cloudStatus').innerText = "🔄";
+        window.headerText = document.getElementById("editableHeader").innerText;
+        saveToFirebase();
+    };
+
+    function saveToFirebase() {
+        set(dbRef, { 
+            config: window.config, 
+            headerText: window.headerText,
+            lastUpdate: new Date().getTime() 
+        })
+        .then(() => { 
+            document.getElementById('cloudStatus').innerText = "✅"; 
+            setTimeout(()=>document.getElementById('cloudStatus').innerText="☁️", 2000); 
+        });
+    }
 
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
-        if (data && data.config) { window.config = data.config; if(!window.isEditing) window.renderAll(); }
-        else { window.renderAll(); }
+        if (data && data.config) { 
+            window.config = data.config; 
+            if(data.headerText) window.headerText = data.headerText;
+            else window.headerText = "PROFESSOR LENO - E.M. QUINTINO BOCAIUVA";
+            document.getElementById("editableHeader").innerText = window.headerText;
+            if(!window.isEditing) window.renderAll(); 
+        }
+        else { 
+            window.headerText = "PROFESSOR LENO - E.M. QUINTINO BOCAIUVA";
+            document.getElementById("editableHeader").innerText = window.headerText;
+            window.renderAll(); 
+        }
     });
 </script>
 
@@ -117,6 +151,14 @@
     window.activeDay = "Segunda";
     let searchTerm = "";
     let draggedData = null;
+    window.headerText = "PROFESSOR LENO - E.M. QUINTINO BOCAIUVA";
+
+    // Função para verificar se o nome é LENO, Leno ou Lenilson
+    function isLenoName(teacherName) {
+        if(!teacherName) return false;
+        const upperName = teacherName.toUpperCase().trim();
+        return upperName === "LENO" || upperName === "LENILSON";
+    }
 
     // Estrutura Garantida: 6 Linhas x 10 Colunas
     window.config = {
@@ -140,24 +182,35 @@
     window.renderAll = function() {
         const img = document.getElementById("headerImg");
         img.src = window.activeShift === "manha" ? "https://raw.githubusercontent.com/lenilsonxavier-dev/Hor-rio-Quintino-Bocaiuva-2026/main/frontquintinobocav.jpg" : "https://raw.githubusercontent.com/lenilsonxavier-dev/Hor-rio-Quintino-Bocaiuva-2026/main/frontquirino.jpg";
+        
         document.getElementById("shiftTabs").innerHTML = ["manha", "tarde"].map(s => `<div class="tab ${window.activeShift===s?'active':''}" onclick="window.activeShift='${s}';window.renderAll()">${s.toUpperCase()}</div>`).join("");
         document.getElementById("dayTabs").innerHTML = DIAS.map(d => `<div class="tab ${window.activeDay===d?'active':''}" onclick="window.activeDay='${d}';window.renderAll()">${d}</div>`).join("");
+        
         const shift = window.config[window.activeShift];
         if(!shift.data[window.activeDay]) shift.data[window.activeDay] = Array(shift.aulas.length).fill().map(() => Array(shift.turmas.length).fill().map(() => ({teacher:"Livre", room:"---"})));
         
         let html = `<div class="schedule-grid" style="grid-template-columns: 100px repeat(${shift.turmas.length}, minmax(120px, 1fr))">`;
         html += `<div class="grid-header">Horários</div>`;
         shift.turmas.forEach((t, i) => html += `<div class="grid-header" oncontextmenu="window.showMenu(event, 'col', ${i})" onclick="window.editTurma(${i})">${t}</div>`);
+        
         shift.aulas.forEach((aula, aIdx) => {
             html += `<div class="time-slot" oncontextmenu="window.showMenu(event, 'row', ${aIdx})" onclick="window.editHora(${aIdx})">${aula.l}<br>${aula.h}</div>`;
             shift.turmas.forEach((_, tIdx) => {
                 const cell = shift.data[window.activeDay][aIdx][tIdx] || {teacher:"Livre", room:"---"};
                 let classes = "schedule-cell";
                 const prof = cell.teacher || "Livre";
-                if (prof.includes('*')) classes += " cell-quebrada";
-                if (prof.toUpperCase().includes("HI")) classes += " cell-hi";
-                else if (prof.toUpperCase().includes("HL")) classes += " cell-hl";
+                
+                // Verifica se é LENO/Leno/Lenilson para aplicar azul
+                if (isLenoName(prof)) {
+                    classes += " cell-leno";
+                } else {
+                    if (prof.includes('*')) classes += " cell-quebrada";
+                    if (prof.toUpperCase().includes("HI")) classes += " cell-hi";
+                    else if (prof.toUpperCase().includes("HL")) classes += " cell-hl";
+                }
+                
                 if (searchTerm && prof.toUpperCase().includes(searchTerm.toUpperCase()) && prof !== "Livre") classes += " cell-highlight";
+                
                 html += `<div class="${classes}" draggable="${window.isEditing}" ondragstart="handleDrag(event,${aIdx},${tIdx})" ondragover="event.preventDefault()" ondrop="handleDrop(event,${aIdx},${tIdx})" onclick="window.editCell(${aIdx},${tIdx})"><strong>${prof}</strong><small>${cell.room || "---"}</small></div>`;
             });
         });
@@ -166,27 +219,44 @@
     };
 
     window.tryLogin = () => {
-        if(document.getElementById("passInput").value === "LX1") { // Senha LX1
+        if(document.getElementById("passInput").value === "LX1") {
             window.isEditing = true;
             document.getElementById("lockBtn").innerText = "🔓";
             document.getElementById("lockBtn").classList.add("unlocked");
             document.getElementById("footerLegend").contentEditable = "true";
+            document.getElementById("editableHeader").contentEditable = "true";
             document.getElementById("loginOverlay").style.display="none";
             window.renderAll();
         } else { alert("Senha incorreta!"); }
     };
 
     window.openLogin = () => { if(window.isEditing) location.reload(); else document.getElementById("loginOverlay").style.display="flex"; };
-    window.editCell = (a, t) => { if(!window.isEditing) return; const cell = window.config[window.activeShift].data[window.activeDay][a][t]; const p = prompt("Professor:", cell.teacher); if(p !== null) { cell.teacher = p || "Livre"; cell.room = prompt("Sala:", cell.room) || "---"; window.saveAuto(); window.renderAll(); }};
-    window.editTurma = (i) => { if(!window.isEditing) return; const n = prompt("Turma:", window.config[window.activeShift].turmas[i]); if(n) { window.config[window.activeShift].turmas[i]=n; window.saveAuto(); window.renderAll(); }};
-    window.editHora = (i) => { if(!window.isEditing) return; const a = window.config[window.activeShift].aulas[i]; const l = prompt("Label:", a.l); const h = prompt("Hora:", a.h); if(l&&h) { a.l=l; a.h=h; window.saveAuto(); window.renderAll(); }};
+    
+    window.editCell = (a, t) => { 
+        if(!window.isEditing) return; 
+        const cell = window.config[window.activeShift].data[window.activeDay][a][t]; 
+        const p = prompt("Professor:", cell.teacher); 
+        if(p !== null) { 
+            cell.teacher = p || "Livre"; 
+            cell.room = prompt("Sala:", cell.room) || "---"; 
+            window.saveFooterAuto(); 
+            window.renderAll(); 
+        }
+    };
+    
+    window.editTurma = (i) => { if(!window.isEditing) return; const n = prompt("Turma:", window.config[window.activeShift].turmas[i]); if(n) { window.config[window.activeShift].turmas[i]=n; window.saveFooterAuto(); window.renderAll(); }};
+    window.editHora = (i) => { if(!window.isEditing) return; const a = window.config[window.activeShift].aulas[i]; const l = prompt("Label:", a.l); const h = prompt("Hora:", a.h); if(l&&h) { a.l=l; a.h=h; window.saveFooterAuto(); window.renderAll(); }};
+    
     window.showMenu = (e, type, idx) => { if(!window.isEditing) return; e.preventDefault(); const m = document.getElementById("contextMenu"); m.style.display="block"; m.style.left=e.pageX+"px"; m.style.top=e.pageY+"px"; m.innerHTML = type === 'col' ? `<div onclick="window.addCol(${idx})">➕ Adicionar Turma</div><div onclick="window.delCol(${idx})" style="color:red">🗑️ Remover Turma</div>` : `<div onclick="window.addRow(${idx})">➕ Adicionar Horário</div><div onclick="window.delRow(${idx})" style="color:red">🗑️ Remover Horário</div>`; };
+    
     function handleDrag(e, a, t) { draggedData = { a, t, content: {...window.config[window.activeShift].data[window.activeDay][a][t]} }; }
-    function handleDrop(e, a, t) { e.preventDefault(); const data = window.config[window.activeShift].data[window.activeDay]; if(!e.ctrlKey) data[draggedData.a][draggedData.t] = {teacher:"Livre", room:"---"}; data[a][t] = draggedData.content; window.saveAuto(); window.renderAll(); }
-    window.addCol = (i) => { window.config[window.activeShift].turmas.splice(i+1, 0, "Nova"); window.saveAuto(); window.renderAll(); };
-    window.delCol = (i) => { if(confirm("Remover?")) { window.config[window.activeShift].turmas.splice(i, 1); window.saveAuto(); window.renderAll(); }};
-    window.addRow = (i) => { window.config[window.activeShift].aulas.splice(i+1, 0, {l:"Nª", h:"00:00"}); window.saveAuto(); window.renderAll(); };
-    window.delRow = (i) => { if(confirm("Remover?")) { window.config[window.activeShift].aulas.splice(i, 1); window.saveAuto(); window.renderAll(); }};
+    function handleDrop(e, a, t) { e.preventDefault(); const data = window.config[window.activeShift].data[window.activeDay]; if(!e.ctrlKey) data[draggedData.a][draggedData.t] = {teacher:"Livre", room:"---"}; data[a][t] = draggedData.content; window.saveFooterAuto(); window.renderAll(); }
+    
+    window.addCol = (i) => { window.config[window.activeShift].turmas.splice(i+1, 0, "Nova"); window.saveFooterAuto(); window.renderAll(); };
+    window.delCol = (i) => { if(confirm("Remover?")) { window.config[window.activeShift].turmas.splice(i, 1); window.saveFooterAuto(); window.renderAll(); }};
+    window.addRow = (i) => { window.config[window.activeShift].aulas.splice(i+1, 0, {l:"Nª", h:"00:00"}); window.saveFooterAuto(); window.renderAll(); };
+    window.delRow = (i) => { if(confirm("Remover?")) { window.config[window.activeShift].aulas.splice(i, 1); window.saveFooterAuto(); window.renderAll(); }};
+    
     document.addEventListener("click", () => document.getElementById("contextMenu").style.display="none");
     document.getElementById("teacherSearch").oninput = (e) => { searchTerm = e.target.value; window.renderAll(); };
     window.onload = () => window.renderAll();
