@@ -26,8 +26,8 @@
         .cell-hi { background-color: #ffcfcf !important; border: 1.5px solid #ef4444 !important; }
         .cell-hl { background-color: #d1fae5 !important; border: 1.5px solid #10b981 !important; }
         .cell-highlight { background-color: #bae6fd !important; font-weight: bold; }
-        .cell-leno { background-color: #3b82f6 !important; color: white !important; font-weight: bold; border: 2px solid #1e3a5f !important; }
-        .cell-leno small { color: #e0f2fe !important; }
+        .cell-leno { background-color: rgba(30, 58, 95, 0.3) !important; border: 2px solid #1e3a5f !important; font-weight: bold; }
+        .cell-leno small { color: #1e3a5f !important; font-weight: bold; }
         .tabs-row { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; align-items: center; }
         .tab { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 40px; cursor: pointer; font-weight: 600; white-space: nowrap; }
         .tab.active { background: #1e3a5f; color: white; }
@@ -39,7 +39,9 @@
         #loginOverlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 5000; justify-content: center; align-items: center; }
         .login-box { background: white; padding: 30px; border-radius: 20px; width: 320px; text-align: center; }
         .footer-area { margin-top: 20px; padding: 15px; border-radius: 12px; background: #fffbeb; border: 2px dashed #f59e0b; font-weight: bold; min-height: 50px; outline: none; }
-        @media print { .toolbar, .tabs-row, .btn, .close-calendar, .editable-header { display: none !important; } }
+        .alarm-toast { position: fixed; bottom: 20px; right: 20px; background: #1e3a5f; color: white; padding: 15px 20px; border-radius: 10px; z-index: 6000; animation: slideIn 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @media print { .toolbar, .tabs-row, .btn, .close-calendar, .editable-header, .alarm-toast { display: none !important; } }
     </style>
 </head>
 <body>
@@ -152,6 +154,190 @@
     let searchTerm = "";
     let draggedData = null;
     window.headerText = "PROFESSOR LENO - E.M. QUINTINO BOCAIUVA";
+    
+    // Controle de alarmes já disparados
+    let alarmHistory = new Set();
+
+    // Mapeamento de palavras-chave para áudios e mensagens
+    const alarmConfig = {
+        'reunião de pais': {
+            dayAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/pais.mp3?raw=true',
+            weekAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/reuni%C3%A3odepaisemana.mp3?raw=true',
+            dayMsg: '🔔 REUNIÃO DE PAIS HOJE às 7h!',
+            weekMsg: '⚠️ REUNIÃO DE PAIS será na próxima semana!'
+        },
+        'formação': {
+            dayAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/hojeforma.mp3?raw=true',
+            weekAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/paradasemana.mp3?raw=true',
+            dayMsg: '📚 FORMAÇÃO/CONSELHO HOJE!',
+            weekMsg: '⚠️ FORMAÇÃO/CONSELHO na próxima semana!'
+        },
+        'conselho de classe': {
+            dayAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/conselhohoje.mp3?raw=true',
+            weekAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/conselhosemana.mp3?raw=true',
+            dayMsg: '📋 CONSELHO DE CLASSE HOJE!',
+            weekMsg: '⚠️ CONSELHO DE CLASSE na próxima semana!'
+        },
+        'htpc': {
+            tercaQuintaAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/horadohtpc.mp3?raw=true',
+            cincoMinAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/htpc5m.mp3?raw=true',
+            tercaQuintaMsg: '⏰ HTPC às 12h (Terça/Quinta)!',
+            cincoMinMsg: '⏰ HTPC começa em 5 minutos!'
+        }
+    };
+
+    // Função para tocar áudio
+    function playAudio(url, message) {
+        const audio = new Audio(url);
+        audio.play().catch(e => console.log('Erro ao tocar áudio:', e));
+        
+        // Mostrar toast notification
+        const toast = document.createElement('div');
+        toast.className = 'alarm-toast';
+        toast.innerHTML = `🔔 ${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
+
+    // Verificar alarmes de HTPC (Terça e Quinta ao meio-dia)
+    function checkHTPCAlarms() {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const dayOfWeek = now.getDay(); // 2=Terça, 4=Quinta
+        
+        // Terça (2) ou Quinta (4)
+        if (dayOfWeek === 2 || dayOfWeek === 4) {
+            const alarmKey = `htpc_${now.toDateString()}`;
+            
+            // Meio-dia (12:00)
+            if (currentHour === 12 && currentMinute === 0 && !alarmHistory.has(`${alarmKey}_12`)) {
+                playAudio(alarmConfig.htpc.tercaQuintaAudio, alarmConfig.htpc.tercaQuintaMsg);
+                alarmHistory.add(`${alarmKey}_12`);
+            }
+            
+            // 5 minutos antes (11:55)
+            if (currentHour === 11 && currentMinute === 55 && !alarmHistory.has(`${alarmKey}_1155`)) {
+                playAudio(alarmConfig.htpc.cincoMinAudio, alarmConfig.htpc.cincoMinMsg);
+                alarmHistory.add(`${alarmKey}_1155`);
+            }
+        }
+    }
+
+    // Verificar alarmes baseados nas células do calendário
+    function checkCellAlarms() {
+        const now = new Date();
+        const today = now.toDateString();
+        const nextWeek = new Date(now.getTime() + 7*24*60*60*1000).toDateString();
+        
+        // Percorre todas as células em busca de palavras-chave
+        for (const shift of ['manha', 'tarde']) {
+            for (const day of DIAS) {
+                const dayData = window.config[shift].data[day];
+                if (!dayData) continue;
+                
+                for (let aIdx = 0; aIdx < dayData.length; aIdx++) {
+                    for (let tIdx = 0; tIdx < dayData[aIdx].length; tIdx++) {
+                        const cell = dayData[aIdx][tIdx];
+                        if (!cell || !cell.teacher) continue;
+                        
+                        const teacherLower = cell.teacher.toLowerCase();
+                        
+                        // Verifica cada tipo de alarme
+                        for (const [keyword, config] of Object.entries(alarmConfig)) {
+                            if (keyword === 'htpc') continue; // HTPC já tratado separadamente
+                            
+                            if (teacherLower.includes(keyword)) {
+                                // Verifica se é hoje
+                                const cellDate = getDateFromDay(day);
+                                if (cellDate && cellDate.toDateString() === today) {
+                                    const alarmKey = `${keyword}_day_${today}`;
+                                    if (!alarmHistory.has(alarmKey)) {
+                                        playAudio(config.dayAudio, config.dayMsg);
+                                        alarmHistory.add(alarmKey);
+                                    }
+                                }
+                                // Verifica se é na próxima semana
+                                else if (cellDate && cellDate.toDateString() === nextWeek) {
+                                    const alarmKey = `${keyword}_week_${nextWeek}`;
+                                    if (!alarmHistory.has(alarmKey)) {
+                                        playAudio(config.weekAudio, config.weekMsg);
+                                        alarmHistory.add(alarmKey);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Converte dia da semana para data (considera a semana atual)
+    function getDateFromDay(dayName) {
+        const daysMap = { 'Segunda': 1, 'Terça': 2, 'Quarta': 3, 'Quinta': 4, 'Sexta': 5 };
+        const targetDay = daysMap[dayName];
+        if (!targetDay) return null;
+        
+        const now = new Date();
+        const currentDay = now.getDay(); // 0=Domingo, 1=Segunda...
+        let diff = targetDay - currentDay;
+        
+        const targetDate = new Date(now);
+        targetDate.setDate(now.getDate() + diff);
+        return targetDate;
+    }
+
+    // Verificar alarmes de Segunda-feira 7h
+    function checkMondayAlarms() {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const dayOfWeek = now.getDay(); // 1=Segunda
+        
+        if (dayOfWeek === 1 && currentHour === 7 && currentMinute === 0) {
+            const alarmKey = `monday_${now.toDateString()}`;
+            if (!alarmHistory.has(alarmKey)) {
+                playAudio('https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/segunda.mp3?raw=true', '🎵 Bom dia! Início da semana às 7h');
+                alarmHistory.add(alarmKey);
+            }
+        }
+    }
+
+    // Verificar alarmes de Sexta-feira
+    function checkFridayAlarms() {
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const dayOfWeek = now.getDay(); // 5=Sexta
+        
+        if (dayOfWeek === 5) {
+            const alarmKey = `friday_${now.toDateString()}`;
+            if (!alarmHistory.has(alarmKey)) {
+                playAudio('https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/sexta.mp3?raw=true', '🎵 Sexta-feira! Final de semana chegando!');
+                alarmHistory.add(alarmKey);
+            }
+        }
+    }
+
+    // Iniciar verificação periódica de alarmes
+    function startAlarmChecker() {
+        // Verificar a cada minuto
+        setInterval(() => {
+            checkHTPCAlarms();
+            checkMondayAlarms();
+            checkFridayAlarms();
+            checkCellAlarms();
+        }, 60000); // a cada 1 minuto
+        
+        // Verificação imediata ao carregar
+        setTimeout(() => {
+            checkHTPCAlarms();
+            checkMondayAlarms();
+            checkFridayAlarms();
+            checkCellAlarms();
+        }, 5000);
+    }
 
     // Função para verificar se o nome é LENO, Leno ou Lenilson
     function isLenoName(teacherName) {
@@ -200,7 +386,7 @@
                 let classes = "schedule-cell";
                 const prof = cell.teacher || "Livre";
                 
-                // Verifica se é LENO/Leno/Lenilson para aplicar azul
+                // Verifica se é LENO/Leno/Lenilson para aplicar azul navy transparente
                 if (isLenoName(prof)) {
                     classes += " cell-leno";
                 } else {
@@ -259,7 +445,12 @@
     
     document.addEventListener("click", () => document.getElementById("contextMenu").style.display="none");
     document.getElementById("teacherSearch").oninput = (e) => { searchTerm = e.target.value; window.renderAll(); };
-    window.onload = () => window.renderAll();
+    
+    // Inicializar o verificador de alarmes
+    window.onload = () => {
+        window.renderAll();
+        startAlarmChecker();
+    };
 </script>
 </body>
 </html>
