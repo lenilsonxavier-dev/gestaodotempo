@@ -8,7 +8,11 @@
         * { box-sizing: border-box; }
         body { background: #eef2f8; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; }
         .header-institucional { width: 100%; max-width: 1400px; margin: 0 auto 15px; display: flex; justify-content: center; background: white; padding: 10px; border-radius: 15px; flex-direction: column; align-items: center; }
-        .header-institucional img { width: 100%; max-width: 1200px; height: auto; border-radius: 10px; }
+        .header-institucional img { width: 100%; max-width: 1200px; height: auto; border-radius: 10px; display: none; }
+        .prefeitura-header { text-align: center; margin-bottom: 10px; width: 100%; }
+        .brasao { width: 60px; height: 60px; margin-bottom: 5px; }
+        .editable-prefeitura { font-size: 1.4rem; font-weight: bold; color: #1e3a5f; text-align: center; outline: none; cursor: text; }
+        .editable-gestao { font-size: 2rem; font-weight: bold; color: #1e3a5f; text-align: center; margin: 5px 0; outline: none; cursor: text; }
         .editable-header { width: 100%; max-width: 1200px; margin-top: 10px; text-align: center; font-size: 1.2rem; font-weight: bold; background: #f0f7ff; padding: 12px; border-radius: 10px; border: 2px solid #1e3a5f; outline: none; cursor: text; }
         .main-container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
         .toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; align-items: center; }
@@ -41,7 +45,7 @@
         .footer-area { margin-top: 20px; padding: 15px; border-radius: 12px; background: #fffbeb; border: 2px dashed #f59e0b; font-weight: bold; min-height: 50px; outline: none; }
         .alarm-toast { position: fixed; bottom: 20px; right: 20px; background: #1e3a5f; color: white; padding: 15px 20px; border-radius: 10px; z-index: 6000; animation: slideIn 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @media print { .toolbar, .tabs-row, .btn, .close-calendar, .editable-header, .alarm-toast { display: none !important; } }
+        @media print { .toolbar, .tabs-row, .btn, .close-calendar, .editable-header, .editable-prefeitura, .editable-gestao, .alarm-toast { display: none !important; } }
     </style>
 </head>
 <body>
@@ -62,7 +66,10 @@
 </div>
 
 <div class="header-institucional">
-    <img id="headerImg" src="">
+    <div class="prefeitura-header">
+        <div class="editable-prefeitura" id="editablePrefeitura" contenteditable="false" onblur="window.savePrefeituraAuto()">PREFEITURA DE OSASCO</div>
+        <div class="editable-gestao" id="editableGestao" contenteditable="false" onblur="window.saveGestaoAuto()">Gestão do Tempo</div>
+    </div>
     <div id="editableHeader" class="editable-header" contenteditable="false" onblur="window.saveHeaderAuto()">PROFESSOR LENO - E.M. QUINTINO BOCAIUVA</div>
 </div>
 
@@ -113,35 +120,79 @@
     window.saveHeaderAuto = function() {
         if(!window.isEditing) return;
         document.getElementById('cloudStatus').innerText = "🔄";
-        window.headerText = document.getElementById("editableHeader").innerText;
+        window.config.headerText = document.getElementById("editableHeader").innerText;
+        saveToFirebase();
+    };
+
+    window.savePrefeituraAuto = function() {
+        if(!window.isEditing) return;
+        document.getElementById('cloudStatus').innerText = "🔄";
+        window.config.prefeituraText = document.getElementById("editablePrefeitura").innerText;
+        saveToFirebase();
+    };
+
+    window.saveGestaoAuto = function() {
+        if(!window.isEditing) return;
+        document.getElementById('cloudStatus').innerText = "🔄";
+        window.config.gestaoText = document.getElementById("editableGestao").innerText;
         saveToFirebase();
     };
 
     function saveToFirebase() {
         set(dbRef, { 
-            config: window.config, 
-            headerText: window.headerText,
+            config: window.config,
             lastUpdate: new Date().getTime() 
         })
         .then(() => { 
             document.getElementById('cloudStatus').innerText = "✅"; 
             setTimeout(()=>document.getElementById('cloudStatus').innerText="☁️", 2000); 
+        })
+        .catch(error => {
+            console.error("Erro ao salvar:", error);
+            document.getElementById('cloudStatus').innerText = "❌";
         });
     }
 
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
         if (data && data.config) { 
-            window.config = data.config; 
-            if(data.headerText) window.headerText = data.headerText;
-            else window.headerText = "PROFESSOR LENO - E.M. QUINTINO BOCAIUVA";
-            document.getElementById("editableHeader").innerText = window.headerText;
+            window.config = data.config;
+            
+            // Restaurar textos do cabeçalho
+            if(!window.config.prefeituraText) window.config.prefeituraText = "PREFEITURA DE OSASCO";
+            if(!window.config.gestaoText) window.config.gestaoText = "Gestão do Tempo";
+            if(!window.config.headerText) window.config.headerText = "PROFESSOR LENO - E.M. QUINTINO BOCAIUVA";
+            
+            document.getElementById("editablePrefeitura").innerText = window.config.prefeituraText;
+            document.getElementById("editableGestao").innerText = window.config.gestaoText;
+            document.getElementById("editableHeader").innerText = window.config.headerText;
+            
             if(!window.isEditing) window.renderAll(); 
         }
         else { 
-            window.headerText = "PROFESSOR LENO - E.M. QUINTINO BOCAIUVA";
-            document.getElementById("editableHeader").innerText = window.headerText;
+            // Inicializar estrutura padrão
+            if(!window.config) {
+                window.config = {
+                    manha: { 
+                        aulas: [{l:"1ª",h:"07:10"},{l:"2ª",h:"08:00"},{l:"3ª",h:"08:50"},{l:"4ª",h:"10:00"},{l:"5ª",h:"10:50"}], 
+                        turmas: ["1ºA","1ºB","2ºA","2ºB","3ºA","3ºB","4ºA","4ºB","5ºA"], 
+                        data: {}, legendasPorDia: {} 
+                    },
+                    tarde: { 
+                        aulas: [{l:"1ª",h:"13:30"},{l:"2ª",h:"14:20"},{l:"3ª",h:"15:10"},{l:"4ª",h:"16:20"},{l:"5ª",h:"17:10"}], 
+                        turmas: ["1ºA","1ºB","2ºA","2ºB","3ºA","3ºB","4ºA","4ºB","5ºA"], 
+                        data: {}, legendasPorDia: {} 
+                    },
+                    prefeituraText: "PREFEITURA DE OSASCO",
+                    gestaoText: "Gestão do Tempo",
+                    headerText: "PROFESSOR LENO - E.M. QUINTINO BOCAIUVA"
+                };
+            }
+            document.getElementById("editablePrefeitura").innerText = window.config.prefeituraText;
+            document.getElementById("editableGestao").innerText = window.config.gestaoText;
+            document.getElementById("editableHeader").innerText = window.config.headerText;
             window.renderAll(); 
+            saveToFirebase();
         }
     });
 </script>
@@ -153,12 +204,9 @@
     window.activeDay = "Segunda";
     let searchTerm = "";
     let draggedData = null;
-    window.headerText = "PROFESSOR LENO - E.M. QUINTINO BOCAIUVA";
     
-    // Controle de alarmes já disparados
     let alarmHistory = new Set();
 
-    // Mapeamento de palavras-chave para áudios e mensagens
     const alarmConfig = {
         'reunião de pais': {
             dayAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/pais.mp3?raw=true',
@@ -178,6 +226,12 @@
             dayMsg: '📋 CONSELHO DE CLASSE HOJE!',
             weekMsg: '⚠️ CONSELHO DE CLASSE na próxima semana!'
         },
+        'conselho': {
+            dayAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/conselhohoje.mp3?raw=true',
+            weekAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/conselhosemana.mp3?raw=true',
+            dayMsg: '📋 CONSELHO DE CLASSE HOJE!',
+            weekMsg: '⚠️ CONSELHO DE CLASSE na próxima semana!'
+        },
         'htpc': {
             tercaQuintaAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/horadohtpc.mp3?raw=true',
             cincoMinAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/htpc5m.mp3?raw=true',
@@ -186,12 +240,10 @@
         }
     };
 
-    // Função para tocar áudio
     function playAudio(url, message) {
         const audio = new Audio(url);
         audio.play().catch(e => console.log('Erro ao tocar áudio:', e));
         
-        // Mostrar toast notification
         const toast = document.createElement('div');
         toast.className = 'alarm-toast';
         toast.innerHTML = `🔔 ${message}`;
@@ -199,24 +251,20 @@
         setTimeout(() => toast.remove(), 5000);
     }
 
-    // Verificar alarmes de HTPC (Terça e Quinta ao meio-dia)
     function checkHTPCAlarms() {
         const now = new Date();
         const currentHour = now.getHours();
         const currentMinute = now.getMinutes();
-        const dayOfWeek = now.getDay(); // 2=Terça, 4=Quinta
+        const dayOfWeek = now.getDay();
         
-        // Terça (2) ou Quinta (4)
         if (dayOfWeek === 2 || dayOfWeek === 4) {
             const alarmKey = `htpc_${now.toDateString()}`;
             
-            // Meio-dia (12:00)
             if (currentHour === 12 && currentMinute === 0 && !alarmHistory.has(`${alarmKey}_12`)) {
                 playAudio(alarmConfig.htpc.tercaQuintaAudio, alarmConfig.htpc.tercaQuintaMsg);
                 alarmHistory.add(`${alarmKey}_12`);
             }
             
-            // 5 minutos antes (11:55)
             if (currentHour === 11 && currentMinute === 55 && !alarmHistory.has(`${alarmKey}_1155`)) {
                 playAudio(alarmConfig.htpc.cincoMinAudio, alarmConfig.htpc.cincoMinMsg);
                 alarmHistory.add(`${alarmKey}_1155`);
@@ -224,13 +272,11 @@
         }
     }
 
-    // Verificar alarmes baseados nas células do calendário
     function checkCellAlarms() {
         const now = new Date();
         const today = now.toDateString();
         const nextWeek = new Date(now.getTime() + 7*24*60*60*1000).toDateString();
         
-        // Percorre todas as células em busca de palavras-chave
         for (const shift of ['manha', 'tarde']) {
             for (const day of DIAS) {
                 const dayData = window.config[shift].data[day];
@@ -243,12 +289,10 @@
                         
                         const teacherLower = cell.teacher.toLowerCase();
                         
-                        // Verifica cada tipo de alarme
                         for (const [keyword, config] of Object.entries(alarmConfig)) {
-                            if (keyword === 'htpc') continue; // HTPC já tratado separadamente
+                            if (keyword === 'htpc') continue;
                             
                             if (teacherLower.includes(keyword)) {
-                                // Verifica se é hoje
                                 const cellDate = getDateFromDay(day);
                                 if (cellDate && cellDate.toDateString() === today) {
                                     const alarmKey = `${keyword}_day_${today}`;
@@ -257,7 +301,6 @@
                                         alarmHistory.add(alarmKey);
                                     }
                                 }
-                                // Verifica se é na próxima semana
                                 else if (cellDate && cellDate.toDateString() === nextWeek) {
                                     const alarmKey = `${keyword}_week_${nextWeek}`;
                                     if (!alarmHistory.has(alarmKey)) {
@@ -273,14 +316,13 @@
         }
     }
 
-    // Converte dia da semana para data (considera a semana atual)
     function getDateFromDay(dayName) {
         const daysMap = { 'Segunda': 1, 'Terça': 2, 'Quarta': 3, 'Quinta': 4, 'Sexta': 5 };
         const targetDay = daysMap[dayName];
         if (!targetDay) return null;
         
         const now = new Date();
-        const currentDay = now.getDay(); // 0=Domingo, 1=Segunda...
+        const currentDay = now.getDay();
         let diff = targetDay - currentDay;
         
         const targetDate = new Date(now);
@@ -288,12 +330,11 @@
         return targetDate;
     }
 
-    // Verificar alarmes de Segunda-feira 7h
     function checkMondayAlarms() {
         const now = new Date();
         const currentHour = now.getHours();
         const currentMinute = now.getMinutes();
-        const dayOfWeek = now.getDay(); // 1=Segunda
+        const dayOfWeek = now.getDay();
         
         if (dayOfWeek === 1 && currentHour === 7 && currentMinute === 0) {
             const alarmKey = `monday_${now.toDateString()}`;
@@ -304,12 +345,9 @@
         }
     }
 
-    // Verificar alarmes de Sexta-feira
     function checkFridayAlarms() {
         const now = new Date();
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
-        const dayOfWeek = now.getDay(); // 5=Sexta
+        const dayOfWeek = now.getDay();
         
         if (dayOfWeek === 5) {
             const alarmKey = `friday_${now.toDateString()}`;
@@ -320,17 +358,14 @@
         }
     }
 
-    // Iniciar verificação periódica de alarmes
     function startAlarmChecker() {
-        // Verificar a cada minuto
         setInterval(() => {
             checkHTPCAlarms();
             checkMondayAlarms();
             checkFridayAlarms();
             checkCellAlarms();
-        }, 60000); // a cada 1 minuto
+        }, 60000);
         
-        // Verificação imediata ao carregar
         setTimeout(() => {
             checkHTPCAlarms();
             checkMondayAlarms();
@@ -339,26 +374,29 @@
         }, 5000);
     }
 
-    // Função para verificar se o nome é LENO, Leno ou Lenilson
     function isLenoName(teacherName) {
         if(!teacherName) return false;
         const upperName = teacherName.toUpperCase().trim();
         return upperName === "LENO" || upperName === "LENILSON";
     }
 
-    // Estrutura Garantida: 6 Linhas x 10 Colunas
-    window.config = {
-        manha: { 
-            aulas: [{l:"1ª",h:"07:10"},{l:"2ª",h:"08:00"},{l:"3ª",h:"08:50"},{l:"4ª",h:"10:00"},{l:"5ª",h:"10:50"}], 
-            turmas: ["1ºA","1ºB","2ºA","2ºB","3ºA","3ºB","4ºA","4ºB","5ºA"], 
-            data: {}, legendasPorDia: {} 
-        },
-        tarde: { 
-            aulas: [{l:"1ª",h:"13:30"},{l:"2ª",h:"14:20"},{l:"3ª",h:"15:10"},{l:"4ª",h:"16:20"},{l:"5ª",h:"17:10"}], 
-            turmas: ["1ºA","1ºB","2ºA","2ºB","3ºA","3ºB","4ºA","4ºB","5ºA"], 
-            data: {}, legendasPorDia: {} 
-        }
-    };
+    if(!window.config) {
+        window.config = {
+            manha: { 
+                aulas: [{l:"1ª",h:"07:10"},{l:"2ª",h:"08:00"},{l:"3ª",h:"08:50"},{l:"4ª",h:"10:00"},{l:"5ª",h:"10:50"}], 
+                turmas: ["1ºA","1ºB","2ºA","2ºB","3ºA","3ºB","4ºA","4ºB","5ºA"], 
+                data: {}, legendasPorDia: {} 
+            },
+            tarde: { 
+                aulas: [{l:"1ª",h:"13:30"},{l:"2ª",h:"14:20"},{l:"3ª",h:"15:10"},{l:"4ª",h:"16:20"},{l:"5ª",h:"17:10"}], 
+                turmas: ["1ºA","1ºB","2ºA","2ºB","3ºA","3ºB","4ºA","4ºB","5ºA"], 
+                data: {}, legendasPorDia: {} 
+            },
+            prefeituraText: "PREFEITURA DE OSASCO",
+            gestaoText: "Gestão do Tempo",
+            headerText: "PROFESSOR LENO - E.M. QUINTINO BOCAIUVA"
+        };
+    }
 
     window.openCalendar = () => {
         document.getElementById('calFrame').src = "https://lenilsonxavier-dev.github.io/gestaodotempo/calen.html";
@@ -366,9 +404,6 @@
     };
 
     window.renderAll = function() {
-        const img = document.getElementById("headerImg");
-        img.src = window.activeShift === "manha" ? "https://raw.githubusercontent.com/lenilsonxavier-dev/Hor-rio-Quintino-Bocaiuva-2026/main/frontquintinobocav.jpg" : "https://raw.githubusercontent.com/lenilsonxavier-dev/Hor-rio-Quintino-Bocaiuva-2026/main/frontquirino.jpg";
-        
         document.getElementById("shiftTabs").innerHTML = ["manha", "tarde"].map(s => `<div class="tab ${window.activeShift===s?'active':''}" onclick="window.activeShift='${s}';window.renderAll()">${s.toUpperCase()}</div>`).join("");
         document.getElementById("dayTabs").innerHTML = DIAS.map(d => `<div class="tab ${window.activeDay===d?'active':''}" onclick="window.activeDay='${d}';window.renderAll()">${d}</div>`).join("");
         
@@ -386,7 +421,6 @@
                 let classes = "schedule-cell";
                 const prof = cell.teacher || "Livre";
                 
-                // Verifica se é LENO/Leno/Lenilson para aplicar azul navy transparente
                 if (isLenoName(prof)) {
                     classes += " cell-leno";
                 } else {
@@ -411,6 +445,8 @@
             document.getElementById("lockBtn").classList.add("unlocked");
             document.getElementById("footerLegend").contentEditable = "true";
             document.getElementById("editableHeader").contentEditable = "true";
+            document.getElementById("editablePrefeitura").contentEditable = "true";
+            document.getElementById("editableGestao").contentEditable = "true";
             document.getElementById("loginOverlay").style.display="none";
             window.renderAll();
         } else { alert("Senha incorreta!"); }
@@ -446,7 +482,6 @@
     document.addEventListener("click", () => document.getElementById("contextMenu").style.display="none");
     document.getElementById("teacherSearch").oninput = (e) => { searchTerm = e.target.value; window.renderAll(); };
     
-    // Inicializar o verificador de alarmes
     window.onload = () => {
         window.renderAll();
         startAlarmChecker();
