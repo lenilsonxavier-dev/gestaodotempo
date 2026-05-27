@@ -209,34 +209,52 @@
 
     const alarmConfig = {
         'reunião de pais': {
-            dayAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/pais.mp3?raw=true',
-            weekAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/reuni%C3%A3odepaisemana.mp3?raw=true',
+            dayAudio: 'pais.mp3',
+            weekAudio: 'reuniãodepaisemana.mp3',
             dayMsg: '🔔 REUNIÃO DE PAIS HOJE às 7h!',
             weekMsg: '⚠️ REUNIÃO DE PAIS será na próxima semana!'
         },
         'formação': {
-            dayAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/hojeforma.mp3?raw=true',
-            weekAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/paradasemana.mp3?raw=true',
+            dayAudio: 'hojeforma.mp3',
+            weekAudio: 'paradasemana.mp3',
             dayMsg: '📚 FORMAÇÃO/CONSELHO HOJE!',
             weekMsg: '⚠️ FORMAÇÃO/CONSELHO na próxima semana!'
         },
         'conselho de classe': {
-            dayAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/conselhohoje.mp3?raw=true',
-            weekAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/conselhosemana.mp3?raw=true',
+            dayAudio: 'conselhohoje.mp3',
+            weekAudio: 'conselhosemana.mp3',
             dayMsg: '📋 CONSELHO DE CLASSE HOJE!',
             weekMsg: '⚠️ CONSELHO DE CLASSE na próxima semana!'
         },
         'conselho': {
-            dayAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/conselhohoje.mp3?raw=true',
-            weekAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/conselhosemana.mp3?raw=true',
+            dayAudio: 'conselhohoje.mp3',
+            weekAudio: 'conselhosemana.mp3',
             dayMsg: '📋 CONSELHO DE CLASSE HOJE!',
             weekMsg: '⚠️ CONSELHO DE CLASSE na próxima semana!'
         },
         'htpc': {
-            tercaQuintaAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/horadohtpc.mp3?raw=true',
-            cincoMinAudio: 'https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/htpc5m.mp3?raw=true',
+            tercaQuintaAudio: 'horadohtpc.mp3',
+            cincoMinAudio: 'htpc5m.mp3',
             tercaQuintaMsg: '⏰ HTPC às 12h (Terça/Quinta)!',
             cincoMinMsg: '⏰ HTPC começa em 5 minutos!'
+        },
+        'atendimento': {
+            dayAudio: 'atendim.mp3',
+            weekAudio: 'atendim.mp3',
+            dayMsg: '📞 ATENDIMENTO HOJE!',
+            weekMsg: '⚠️ ATENDIMENTO na próxima semana!'
+        },
+        'gestor': {
+            dayAudio: 'reuniagestor.mp3',
+            weekAudio: 'reuniagestor.mp3',
+            dayMsg: '👥 REUNIÃO DE GESTÃO HOJE!',
+            weekMsg: '⚠️ REUNIÃO DE GESTÃO na próxima semana!'
+        },
+        'popular': {
+            dayAudio: 'Populasres (10).mp3',
+            weekAudio: 'Populasres (10).mp3',
+            dayMsg: '🎵 Lembrete Popular HOJE!',
+            weekMsg: '⚠️ Lembrete Popular na próxima semana!'
         }
     };
 
@@ -256,236 +274,3 @@
         const currentHour = now.getHours();
         const currentMinute = now.getMinutes();
         const dayOfWeek = now.getDay();
-        
-        if (dayOfWeek === 2 || dayOfWeek === 4) {
-            const alarmKey = `htpc_${now.toDateString()}`;
-            
-            if (currentHour === 12 && currentMinute === 0 && !alarmHistory.has(`${alarmKey}_12`)) {
-                playAudio(alarmConfig.htpc.tercaQuintaAudio, alarmConfig.htpc.tercaQuintaMsg);
-                alarmHistory.add(`${alarmKey}_12`);
-            }
-            
-            if (currentHour === 11 && currentMinute === 55 && !alarmHistory.has(`${alarmKey}_1155`)) {
-                playAudio(alarmConfig.htpc.cincoMinAudio, alarmConfig.htpc.cincoMinMsg);
-                alarmHistory.add(`${alarmKey}_1155`);
-            }
-        }
-    }
-
-    function checkCellAlarms() {
-        const now = new Date();
-        const today = now.toDateString();
-        const nextWeek = new Date(now.getTime() + 7*24*60*60*1000).toDateString();
-        
-        for (const shift of ['manha', 'tarde']) {
-            for (const day of DIAS) {
-                const dayData = window.config[shift].data[day];
-                if (!dayData) continue;
-                
-                for (let aIdx = 0; aIdx < dayData.length; aIdx++) {
-                    for (let tIdx = 0; tIdx < dayData[aIdx].length; tIdx++) {
-                        const cell = dayData[aIdx][tIdx];
-                        if (!cell || !cell.teacher) continue;
-                        
-                        const teacherLower = cell.teacher.toLowerCase();
-                        
-                        for (const [keyword, config] of Object.entries(alarmConfig)) {
-                            if (keyword === 'htpc') continue;
-                            
-                            if (teacherLower.includes(keyword)) {
-                                const cellDate = getDateFromDay(day);
-                                if (cellDate && cellDate.toDateString() === today) {
-                                    const alarmKey = `${keyword}_day_${today}`;
-                                    if (!alarmHistory.has(alarmKey)) {
-                                        playAudio(config.dayAudio, config.dayMsg);
-                                        alarmHistory.add(alarmKey);
-                                    }
-                                }
-                                else if (cellDate && cellDate.toDateString() === nextWeek) {
-                                    const alarmKey = `${keyword}_week_${nextWeek}`;
-                                    if (!alarmHistory.has(alarmKey)) {
-                                        playAudio(config.weekAudio, config.weekMsg);
-                                        alarmHistory.add(alarmKey);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    function getDateFromDay(dayName) {
-        const daysMap = { 'Segunda': 1, 'Terça': 2, 'Quarta': 3, 'Quinta': 4, 'Sexta': 5 };
-        const targetDay = daysMap[dayName];
-        if (!targetDay) return null;
-        
-        const now = new Date();
-        const currentDay = now.getDay();
-        let diff = targetDay - currentDay;
-        
-        const targetDate = new Date(now);
-        targetDate.setDate(now.getDate() + diff);
-        return targetDate;
-    }
-
-    function checkMondayAlarms() {
-        const now = new Date();
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
-        const dayOfWeek = now.getDay();
-        
-        if (dayOfWeek === 1 && currentHour === 7 && currentMinute === 0) {
-            const alarmKey = `monday_${now.toDateString()}`;
-            if (!alarmHistory.has(alarmKey)) {
-                playAudio('https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/segunda.mp3?raw=true', '🎵 Bom dia! Início da semana às 7h');
-                alarmHistory.add(alarmKey);
-            }
-        }
-    }
-
-    function checkFridayAlarms() {
-        const now = new Date();
-        const dayOfWeek = now.getDay();
-        
-        if (dayOfWeek === 5) {
-            const alarmKey = `friday_${now.toDateString()}`;
-            if (!alarmHistory.has(alarmKey)) {
-                playAudio('https://github.com/lenilsonxavier-dev/gestaodotempo/blob/main/sexta.mp3?raw=true', '🎵 Sexta-feira! Final de semana chegando!');
-                alarmHistory.add(alarmKey);
-            }
-        }
-    }
-
-    function startAlarmChecker() {
-        setInterval(() => {
-            checkHTPCAlarms();
-            checkMondayAlarms();
-            checkFridayAlarms();
-            checkCellAlarms();
-        }, 60000);
-        
-        setTimeout(() => {
-            checkHTPCAlarms();
-            checkMondayAlarms();
-            checkFridayAlarms();
-            checkCellAlarms();
-        }, 5000);
-    }
-
-    function isLenoName(teacherName) {
-        if(!teacherName) return false;
-        const upperName = teacherName.toUpperCase().trim();
-        return upperName === "LENO" || upperName === "LENILSON";
-    }
-
-    if(!window.config) {
-        window.config = {
-            manha: { 
-                aulas: [{l:"1ª",h:"07:10"},{l:"2ª",h:"08:00"},{l:"3ª",h:"08:50"},{l:"4ª",h:"10:00"},{l:"5ª",h:"10:50"}], 
-                turmas: ["1ºA","1ºB","2ºA","2ºB","3ºA","3ºB","4ºA","4ºB","5ºA"], 
-                data: {}, legendasPorDia: {} 
-            },
-            tarde: { 
-                aulas: [{l:"1ª",h:"13:30"},{l:"2ª",h:"14:20"},{l:"3ª",h:"15:10"},{l:"4ª",h:"16:20"},{l:"5ª",h:"17:10"}], 
-                turmas: ["1ºA","1ºB","2ºA","2ºB","3ºA","3ºB","4ºA","4ºB","5ºA"], 
-                data: {}, legendasPorDia: {} 
-            },
-            prefeituraText: "PREFEITURA DE OSASCO",
-            gestaoText: "Gestão do Tempo",
-            headerText: "PROFESSOR LENO - E.M. QUINTINO BOCAIUVA"
-        };
-    }
-
-    window.openCalendar = () => {
-        document.getElementById('calFrame').src = "https://lenilsonxavier-dev.github.io/gestaodotempo/calen.html";
-        document.getElementById('calendarModal').style.display = 'block';
-    };
-
-    window.renderAll = function() {
-        document.getElementById("shiftTabs").innerHTML = ["manha", "tarde"].map(s => `<div class="tab ${window.activeShift===s?'active':''}" onclick="window.activeShift='${s}';window.renderAll()">${s.toUpperCase()}</div>`).join("");
-        document.getElementById("dayTabs").innerHTML = DIAS.map(d => `<div class="tab ${window.activeDay===d?'active':''}" onclick="window.activeDay='${d}';window.renderAll()">${d}</div>`).join("");
-        
-        const shift = window.config[window.activeShift];
-        if(!shift.data[window.activeDay]) shift.data[window.activeDay] = Array(shift.aulas.length).fill().map(() => Array(shift.turmas.length).fill().map(() => ({teacher:"Livre", room:"---"})));
-        
-        let html = `<div class="schedule-grid" style="grid-template-columns: 100px repeat(${shift.turmas.length}, minmax(120px, 1fr))">`;
-        html += `<div class="grid-header">Horários</div>`;
-        shift.turmas.forEach((t, i) => html += `<div class="grid-header" oncontextmenu="window.showMenu(event, 'col', ${i})" onclick="window.editTurma(${i})">${t}</div>`);
-        
-        shift.aulas.forEach((aula, aIdx) => {
-            html += `<div class="time-slot" oncontextmenu="window.showMenu(event, 'row', ${aIdx})" onclick="window.editHora(${aIdx})">${aula.l}<br>${aula.h}</div>`;
-            shift.turmas.forEach((_, tIdx) => {
-                const cell = shift.data[window.activeDay][aIdx][tIdx] || {teacher:"Livre", room:"---"};
-                let classes = "schedule-cell";
-                const prof = cell.teacher || "Livre";
-                
-                if (isLenoName(prof)) {
-                    classes += " cell-leno";
-                } else {
-                    if (prof.includes('*')) classes += " cell-quebrada";
-                    if (prof.toUpperCase().includes("HI")) classes += " cell-hi";
-                    else if (prof.toUpperCase().includes("HL")) classes += " cell-hl";
-                }
-                
-                if (searchTerm && prof.toUpperCase().includes(searchTerm.toUpperCase()) && prof !== "Livre") classes += " cell-highlight";
-                
-                html += `<div class="${classes}" draggable="${window.isEditing}" ondragstart="handleDrag(event,${aIdx},${tIdx})" ondragover="event.preventDefault()" ondrop="handleDrop(event,${aIdx},${tIdx})" onclick="window.editCell(${aIdx},${tIdx})"><strong>${prof}</strong><small>${cell.room || "---"}</small></div>`;
-            });
-        });
-        document.getElementById("scheduleGrid").innerHTML = html + `</div>`;
-        document.getElementById("footerLegend").innerText = (shift.legendasPorDia || {})[window.activeDay] || "⏱️ INTERVALOS...";
-    };
-
-    window.tryLogin = () => {
-        if(document.getElementById("passInput").value === "LX1") {
-            window.isEditing = true;
-            document.getElementById("lockBtn").innerText = "🔓";
-            document.getElementById("lockBtn").classList.add("unlocked");
-            document.getElementById("footerLegend").contentEditable = "true";
-            document.getElementById("editableHeader").contentEditable = "true";
-            document.getElementById("editablePrefeitura").contentEditable = "true";
-            document.getElementById("editableGestao").contentEditable = "true";
-            document.getElementById("loginOverlay").style.display="none";
-            window.renderAll();
-        } else { alert("Senha incorreta!"); }
-    };
-
-    window.openLogin = () => { if(window.isEditing) location.reload(); else document.getElementById("loginOverlay").style.display="flex"; };
-    
-    window.editCell = (a, t) => { 
-        if(!window.isEditing) return; 
-        const cell = window.config[window.activeShift].data[window.activeDay][a][t]; 
-        const p = prompt("Professor:", cell.teacher); 
-        if(p !== null) { 
-            cell.teacher = p || "Livre"; 
-            cell.room = prompt("Sala:", cell.room) || "---"; 
-            window.saveFooterAuto(); 
-            window.renderAll(); 
-        }
-    };
-    
-    window.editTurma = (i) => { if(!window.isEditing) return; const n = prompt("Turma:", window.config[window.activeShift].turmas[i]); if(n) { window.config[window.activeShift].turmas[i]=n; window.saveFooterAuto(); window.renderAll(); }};
-    window.editHora = (i) => { if(!window.isEditing) return; const a = window.config[window.activeShift].aulas[i]; const l = prompt("Label:", a.l); const h = prompt("Hora:", a.h); if(l&&h) { a.l=l; a.h=h; window.saveFooterAuto(); window.renderAll(); }};
-    
-    window.showMenu = (e, type, idx) => { if(!window.isEditing) return; e.preventDefault(); const m = document.getElementById("contextMenu"); m.style.display="block"; m.style.left=e.pageX+"px"; m.style.top=e.pageY+"px"; m.innerHTML = type === 'col' ? `<div onclick="window.addCol(${idx})">➕ Adicionar Turma</div><div onclick="window.delCol(${idx})" style="color:red">🗑️ Remover Turma</div>` : `<div onclick="window.addRow(${idx})">➕ Adicionar Horário</div><div onclick="window.delRow(${idx})" style="color:red">🗑️ Remover Horário</div>`; };
-    
-    function handleDrag(e, a, t) { draggedData = { a, t, content: {...window.config[window.activeShift].data[window.activeDay][a][t]} }; }
-    function handleDrop(e, a, t) { e.preventDefault(); const data = window.config[window.activeShift].data[window.activeDay]; if(!e.ctrlKey) data[draggedData.a][draggedData.t] = {teacher:"Livre", room:"---"}; data[a][t] = draggedData.content; window.saveFooterAuto(); window.renderAll(); }
-    
-    window.addCol = (i) => { window.config[window.activeShift].turmas.splice(i+1, 0, "Nova"); window.saveFooterAuto(); window.renderAll(); };
-    window.delCol = (i) => { if(confirm("Remover?")) { window.config[window.activeShift].turmas.splice(i, 1); window.saveFooterAuto(); window.renderAll(); }};
-    window.addRow = (i) => { window.config[window.activeShift].aulas.splice(i+1, 0, {l:"Nª", h:"00:00"}); window.saveFooterAuto(); window.renderAll(); };
-    window.delRow = (i) => { if(confirm("Remover?")) { window.config[window.activeShift].aulas.splice(i, 1); window.saveFooterAuto(); window.renderAll(); }};
-    
-    document.addEventListener("click", () => document.getElementById("contextMenu").style.display="none");
-    document.getElementById("teacherSearch").oninput = (e) => { searchTerm = e.target.value; window.renderAll(); };
-    
-    window.onload = () => {
-        window.renderAll();
-        startAlarmChecker();
-    };
-</script>
-</body>
-</html>
