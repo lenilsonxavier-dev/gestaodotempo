@@ -150,7 +150,6 @@
         saveToFirebase();
     };
 
-    // Função para garantir estrutura completa do config
     function ensureConfigStructure() {
         if(!window.config.manha) window.config.manha = {};
         if(!window.config.tarde) window.config.tarde = {};
@@ -169,7 +168,6 @@
         if(!window.config.gestaoText) window.config.gestaoText = "Gestão do Tempo";
         if(!window.config.headerText) window.config.headerText = "PROFESSOR LENO - E.M. QUINTINO BOCAIUVA";
         
-        // Inicializar dados padrão para cada dia se não existir
         const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
         for(const shift of ["manha", "tarde"]) {
             for(const day of DIAS) {
@@ -197,7 +195,6 @@
             window.renderAll(); 
         }
         else { 
-            // Inicializar estrutura padrão localmente
             window.config = {
                 manha: { 
                     aulas: [{l:"1ª",h:"07:10"},{l:"2ª",h:"08:00"},{l:"3ª",h:"08:50"},{l:"4ª",h:"10:00"},{l:"5ª",h:"10:50"}], 
@@ -318,18 +315,15 @@
         const shift = window.config[window.activeShift];
         if (!shift) return;
 
-        // Garantir estruturas
         if (!shift.data) shift.data = {};
         if (!shift.legendasPorDia) shift.legendasPorDia = {};
 
-        // Garantir que os dados para o dia ativo existem
         if(!shift.data[window.activeDay]) {
             shift.data[window.activeDay] = Array(shift.aulas.length).fill().map(() => 
                 Array(shift.turmas.length).fill().map(() => ({teacher:"Livre", room:"---"}))
             );
         }
         
-        // Construir grid
         let html = `<div class="schedule-grid" style="grid-template-columns: 100px repeat(${shift.turmas.length}, minmax(120px, 1fr))">`;
         html += `<div class="grid-header">Horários</div>`;
         shift.turmas.forEach((t, i) => html += `<div class="grid-header" oncontextmenu="window.showMenu(event, 'col', ${i})" onclick="window.editTurma(${i})">${t}</div>`);
@@ -351,7 +345,7 @@
                 
                 if (searchTerm && prof.toUpperCase().includes(searchTerm.toUpperCase()) && prof !== "Livre") classes += " cell-highlight";
                 
-                html += `<div class="${classes}" draggable="${window.isEditing}" ondragstart="handleDrag(event,${aIdx},${tIdx})" ondragover="event.preventDefault()" ondrop="handleDrop(event,${aIdx},${tIdx})" onclick="window.editCell(${aIdx},${tIdx})">
+                html += `<div class="${classes}" draggable="${window.isEditing}" ondragstart="window.handleDrag(event,${aIdx},${tIdx})" ondragover="event.preventDefault()" ondrop="window.handleDrop(event,${aIdx},${tIdx})" onclick="window.editCell(${aIdx},${tIdx})">
                             <strong>${prof}</strong><small>${cell.room || "---"}</small>
                         </div>`;
             });
@@ -367,29 +361,10 @@
     }
 
     // ========================================
-    // FUNÇÕES DE ALARME (mantidas originais)
+    // FUNÇÕES DE ALARME (simplificado)
     // ========================================
-    const alarmConfig = {
-        'reunião de pais': { dayMsg: '🔔 REUNIÃO DE PAIS HOJE!', weekMsg: '⚠️ REUNIÃO DE PAIS na próxima semana!' },
-        'formação': { dayMsg: '📚 FORMAÇÃO HOJE!', weekMsg: '⚠️ FORMAÇÃO na próxima semana!' },
-        'conselho': { dayMsg: '📋 CONSELHO DE CLASSE HOJE!', weekMsg: '⚠️ CONSELHO na próxima semana!' }
-    };
-
-    function playAudio(url, message) {
-        const toast = document.createElement('div');
-        toast.className = 'alarm-toast';
-        toast.innerHTML = `🔔 ${message}`;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 5000);
-    }
-
-    function checkCellAlarms() {
-        // Versão simplificada para demonstração
-    }
-
-    function startAlarmChecker() {
-        setInterval(() => checkCellAlarms(), 60000);
-    }
+    function checkCellAlarms() { /* manter só para não quebrar */ }
+    function startAlarmChecker() { setInterval(() => checkCellAlarms(), 60000); }
 
     // ========================================
     // FUNÇÕES DE EDIÇÃO
@@ -475,14 +450,15 @@
             menu.innerHTML = `<div onclick="window.addRow(${idx})">➕ Adicionar Horário</div>
                              <div onclick="window.delRow(${idx})" style="color:red">🗑️ Remover Horário</div>`;
         }
+        document.addEventListener("click", function closeMenu() { menu.style.display = "none"; document.removeEventListener("click", closeMenu); });
     };
     
-    function handleDrag(e, a, t) { 
+    window.handleDrag = (e, a, t) => { 
         if(!window.isEditing) return;
         draggedData = { a, t, content: {...window.config[window.activeShift].data[window.activeDay][a][t]} }; 
-    }
+    };
     
-    function handleDrop(e, a, t) { 
+    window.handleDrop = (e, a, t) => { 
         e.preventDefault(); 
         if(!window.isEditing || !draggedData) return;
         const data = window.config[window.activeShift].data[window.activeDay]; 
@@ -490,7 +466,82 @@
         data[a][t] = draggedData.content; 
         window.saveFooterAuto(); 
         window.renderAll(); 
-    }
+    };
     
     window.addCol = (i) => { 
-        window.config[window.activeShift].turmas.splice(i+1,
+        window.config[window.activeShift].turmas.splice(i+1, 0, "Nova Turma");
+        const newColData = window.config[window.activeShift].aulas.map(() => ({teacher:"Livre", room:"---"}));
+        for(let day of DIAS) {
+            if(window.config[window.activeShift].data[day]) {
+                window.config[window.activeShift].data[day].forEach(row => row.splice(i+1, 0, {teacher:"Livre", room:"---"}));
+            }
+        }
+        window.saveFooterAuto();
+        window.renderAll();
+    };
+    
+    window.delCol = (i) => { 
+        if(window.config[window.activeShift].turmas.length <= 1) return alert("Não é possível remover a última turma.");
+        window.config[window.activeShift].turmas.splice(i, 1);
+        for(let day of DIAS) {
+            if(window.config[window.activeShift].data[day]) {
+                window.config[window.activeShift].data[day].forEach(row => row.splice(i, 1));
+            }
+        }
+        window.saveFooterAuto();
+        window.renderAll();
+    };
+    
+    window.addRow = (i) => { 
+        window.config[window.activeShift].aulas.splice(i+1, 0, {l:"Nova", h:"--:--"});
+        const newRowData = Array(window.config[window.activeShift].turmas.length).fill({teacher:"Livre", room:"---"});
+        for(let day of DIAS) {
+            if(window.config[window.activeShift].data[day]) {
+                window.config[window.activeShift].data[day].splice(i+1, 0, [...newRowData]);
+            }
+        }
+        window.saveFooterAuto();
+        window.renderAll();
+    };
+    
+    window.delRow = (i) => { 
+        if(window.config[window.activeShift].aulas.length <= 1) return alert("Não é possível remover o último horário.");
+        window.config[window.activeShift].aulas.splice(i, 1);
+        for(let day of DIAS) {
+            if(window.config[window.activeShift].data[day]) {
+                window.config[window.activeShift].data[day].splice(i, 1);
+            }
+        }
+        window.saveFooterAuto();
+        window.renderAll();
+    };
+
+    // Pesquisa
+    document.getElementById("teacherSearch").addEventListener("input", (e) => {
+        searchTerm = e.target.value;
+        window.renderAll();
+    });
+
+    // Auto-save dos editáveis
+    document.getElementById("footerLegend").addEventListener("blur", () => window.saveFooterAuto());
+    document.getElementById("editableHeader").addEventListener("blur", () => window.saveHeaderAuto());
+    document.getElementById("editablePrefeitura").addEventListener("blur", () => window.savePrefeituraAuto());
+    document.getElementById("editableGestao").addEventListener("blur", () => window.saveGestaoAuto());
+
+    // Fallback: se o Firebase demorar, tentar renderizar com estrutura padrão
+    setTimeout(() => {
+        if(!window.config || Object.keys(window.config).length === 0) {
+            window.config = {
+                manha: { aulas: [{l:"1ª",h:"07:10"},{l:"2ª",h:"08:00"},{l:"3ª",h:"08:50"},{l:"4ª",h:"10:00"},{l:"5ª",h:"10:50"}], turmas: ["1ºA","1ºB","2ºA","2ºB","3ºA","3ºB","4ºA","4ºB","5ºA"], data: {}, legendasPorDia: {} },
+                tarde: { aulas: [{l:"1ª",h:"13:30"},{l:"2ª",h:"14:20"},{l:"3ª",h:"15:10"},{l:"4ª",h:"16:20"},{l:"5ª",h:"17:10"}], turmas: ["1ºA","1ºB","2ºA","2ºB","3ºA","3ºB","4ºA","4ºB","5ºA"], data: {}, legendasPorDia: {} },
+                prefeituraText: "PREFEITURA DE OSASCO",
+                gestaoText: "Gestão do Tempo",
+                headerText: "PROFESSOR LENO - E.M. QUINTINO BOCAIUVA"
+            };
+            ensureConfigStructure();
+            window.renderAll();
+        }
+    }, 2000);
+</script>
+</body>
+</html>
