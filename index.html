@@ -158,7 +158,20 @@
         if (data && data.config) { 
             window.config = data.config;
             
-            // Restaurar textos do cabeçalho
+            // Garantir integridade de estruturas que o Firebase remove quando vazias
+            if(!window.config.manha) window.config.manha = {};
+            if(!window.config.tarde) window.config.tarde = {};
+            
+            if(!window.config.manha.aulas) window.config.manha.aulas = [{l:"1ª",h:"07:10"},{l:"2ª",h:"08:00"},{l:"3ª",h:"08:50"},{l:"4ª",h:"10:00"},{l:"5ª",h:"10:50"}];
+            if(!window.config.manha.turmas) window.config.manha.turmas = ["1ºA","1ºB","2ºA","2ºB","3ºA","3ºB","4ºA","4ºB","5ºA"];
+            if(!window.config.manha.data) window.config.manha.data = {};
+            if(!window.config.manha.legendasPorDia) window.config.manha.legendasPorDia = {};
+
+            if(!window.config.tarde.aulas) window.config.tarde.aulas = [{l:"1ª",h:"13:30"},{l:"2ª",h:"14:20"},{l:"3ª",h:"15:10"},{l:"4ª",h:"16:20"},{l:"5ª",h:"17:10"}];
+            if(!window.config.tarde.turmas) window.config.tarde.turmas = ["1ºA","1ºB","2ºA","2ºB","3ºA","3ºB","4ºA","4ºB","5ºA"];
+            if(!window.config.tarde.data) window.config.tarde.data = {};
+            if(!window.config.tarde.legendasPorDia) window.config.tarde.legendasPorDia = {};
+            
             if(!window.config.prefeituraText) window.config.prefeituraText = "PREFEITURA DE OSASCO";
             if(!window.config.gestaoText) window.config.gestaoText = "Gestão do Tempo";
             if(!window.config.headerText) window.config.headerText = "PROFESSOR LENO - E.M. QUINTINO BOCAIUVA";
@@ -170,7 +183,7 @@
             if(!window.isEditing) window.renderAll(); 
         }
         else { 
-            // Inicializar estrutura padrão
+            // Inicializar estrutura padrão localmente
             if(!window.config) {
                 window.config = {
                     manha: { 
@@ -274,3 +287,10 @@
         const currentHour = now.getHours();
         const currentMinute = now.getMinutes();
         const dayOfWeek = now.getDay();
+        
+        if (dayOfWeek === 2 || dayOfWeek === 4) {
+            const alarmKey = `htpc_${now.toDateString()}`;
+            
+            if (currentHour === 12 && currentMinute === 0 && !alarmHistory.has(`${alarmKey}_12`)) {
+                playAudio(alarmConfig.htpc.tercaQuintaAudio, alarmConfig.htpc.tercaQuintaMsg);
+                alarmHistory.add(`${alarmKey}_12`);
