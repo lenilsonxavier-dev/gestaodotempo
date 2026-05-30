@@ -16,35 +16,37 @@
 
         /* CONTAINER PRINCIPAL */
         .main-container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; align-items: center; }
-        .search-input { flex-grow: 1; padding: 12px 20px; border-radius: 40px; border: 2px solid #cbd5e1; outline: none; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
+        .search-input { flex-grow: 1; padding: 12px 20px; border-radius: 40px; border: 2px solid #cbd5e1; outline: none; min-width: 200px; }
         
-        .btn { border: none; padding: 10px 20px; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+        .btn { border: none; padding: 10px 18px; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 0.9rem; }
         .btn-navy { background: #1e3a5f; }
+        .btn-green { background: #22c55e; }
+        .btn-orange { background: #f59e0b; }
         .btn-red { background: #ef4444; }
 
         /* GRADE DE HORÁRIOS */
         .grid-wrapper { width: 100%; overflow-x: auto; border: 1px solid #cbd5e1; border-radius: 10px; }
         .schedule-grid { display: grid; background: white; font-size: 0.75rem; }
         .grid-header, .time-slot { background: #f8fafc; font-weight: bold; text-align: center; padding: 8px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; min-height: 50px; display: flex; align-items: center; justify-content: center; }
-        
-        .schedule-cell { border-bottom: 0.5px solid #e2e8f0; border-right: 0.5px solid #e2e8f0; padding: 8px; min-height: 80px; text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .schedule-cell { border-bottom: 0.5px solid #e2e8f0; border-right: 0.5px solid #e2e8f0; padding: 8px; min-height: 80px; text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: pointer; }
 
-        /* CORES DAS CÉLULAS (TRANSPARENTES) */
+        /* CORES CÉLULAS */
         .cell-leno { background-color: rgba(30, 58, 95, 0.2) !important; border: 2px solid #1e3a5f !important; font-weight: bold; }
-        
-        /* Hi = AMARELO TRANSPARENTE */
         .cell-hi { background-color: rgba(255, 255, 0, 0.3) !important; border-left: 5px solid #eab308 !important; }
-        
-        /* Hl = VERMELHO TRANSPARENTE */
         .cell-hl { background-color: rgba(239, 68, 68, 0.2) !important; border-left: 5px solid #ef4444 !important; }
 
         /* TABS */
-        .tabs-row { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; }
+        .tabs-row { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; align-items: center; }
         .tab { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 40px; cursor: pointer; font-weight: 600; white-space: nowrap; }
         .tab.active { background: #1e3a5f; color: white; }
 
-        /* ALARMES E TOAST */
+        /* MODAL CALENDÁRIO */
+        #calendarModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 4000; padding: 20px; }
+        .modal-content { background: white; width: 100%; height: 100%; border-radius: 20px; overflow: hidden; position: relative; }
+        .close-calendar { position: absolute; top: 15px; right: 20px; background: #ef4444; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-weight: bold; z-index: 4001; }
+
+        /* TOAST */
         .alarm-toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e3a5f; color: white; padding: 15px 30px; border-radius: 50px; z-index: 10001; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: bold; animation: popUp 0.5s ease; }
         @keyframes popUp { from { bottom: -50px; } to { bottom: 20px; } }
         
@@ -54,27 +56,41 @@
 </head>
 <body>
 
+<!-- BLOQUEIO DE ÁUDIO -->
 <div id="audioUnlock">
     <div style="font-size: 4rem; margin-bottom: 20px;">🔔</div>
-    <h2>Sistema de Gestão 2026</h2>
-    <p>Clique no botão abaixo para carregar a agenda e ativar os sons.</p>
-    <button onclick="ativarSons()">ATIVAR AGENDA AGORA</button>
+    <h2>Sistema Professor Leno 2026</h2>
+    <p>Ative os alarmes e integre com o WhatsApp clicando abaixo.</p>
+    <button onclick="ativarSons()">ATIVAR SISTEMA AGORA</button>
+</div>
+
+<!-- MODAL CALENDÁRIO -->
+<div id="calendarModal">
+    <button class="close-calendar" onclick="document.getElementById('calendarModal').style.display='none'">✕</button>
+    <div class="modal-content">
+        <iframe id="calFrame" src="about:blank" style="width:100%; height:100%; border:none;"></iframe>
+    </div>
 </div>
 
 <div class="header-institucional">
     <div class="editable-prefeitura">PREFEITURA DE OSASCO</div>
     <div class="editable-gestao">Gestão do Tempo</div>
-    <div id="editableHeader" class="editable-header">PROFESSOR LENO - E.M. QUINTINO BOCAIUVA</div>
+    <div class="editable-header">PROFESSOR LENO - E.M. QUINTINO BOCAIUVA</div>
 </div>
 
 <div class="main-container">
     <div class="toolbar">
-        <input type="text" id="teacherSearch" class="search-input" placeholder="🔍 Localizar na agenda...">
-        <button class="btn btn-navy" onclick="testarAudio()">🔊 Testar Alarme</button>
+        <input type="text" id="teacherSearch" class="search-input" placeholder="🔍 Localizar na grade...">
+        <button class="btn btn-green" onclick="compartilharWhatsApp()">🟢 WhatsApp</button>
+        <button class="btn btn-navy" onclick="window.tocar('segunda')">🔊 Seg</button>
+        <button class="btn btn-navy" onclick="window.tocar('sexta')">🔊 Sex</button>
         <button class="btn btn-red" onclick="window.print()">🖨️ PDF</button>
     </div>
     
-    <div class="tabs-row" id="shiftTabs"></div>
+    <div class="tabs-row">
+        <div id="shiftTabs" style="display:flex; gap:8px;"></div>
+        <button class="tab btn-orange" style="color:white" onclick="window.openCalendar()">📅 Calendário Escolar</button>
+    </div>
     <div class="tabs-row" id="dayTabs"></div>
     
     <div class="grid-wrapper">
@@ -84,7 +100,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCjs0Emwh1Eyqf7pXYEJt9MBfY0Ga8ZJBc",
@@ -124,17 +140,14 @@
             player[key].load();
         });
         document.getElementById('audioUnlock').style.display = 'none';
+        showToast("Sistema de Áudio Ativado!");
     };
 
     window.tocar = function(key) {
         if (player[key]) {
             player[key].play().catch(e => console.log("Erro som:", key));
-            showToast("🔔 Alarme Ativado: " + key);
+            showToast("🔊 Testando: " + key);
         }
-    };
-
-    window.testarAudio = function() {
-        window.tocar('segunda');
     };
 
     function showToast(msg) {
@@ -142,34 +155,100 @@
         t.className = 'alarm-toast';
         t.innerText = msg;
         document.body.appendChild(t);
-        setTimeout(() => t.remove(), 5000);
+        setTimeout(() => t.remove(), 4000);
     }
 
-    // --- LÓGICA DE ALARMES ---
+    // --- CALENDÁRIO ---
+    window.openCalendar = function() {
+        const modal = document.getElementById('calendarModal');
+        const iframe = document.getElementById('calFrame');
+        const calendarRef = ref(db, 'calendario_2026');
+
+        onValue(calendarRef, (snapshot) => {
+            const dados = snapshot.val() || { janeiro: ["01/01 - Ano Novo"] };
+            const mesesKey = ["janeiro", "fevereiro", "marco", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+            
+            let html = `<body style="font-family:sans-serif; padding:20px; background:#f0f7ff">
+                <h2 style="color:#1e3a5f">📅 Calendário Escolar 2026</h2>
+                <button id="saveBtn" style="background:#22c55e; color:white; border:none; padding:10px 20px; border-radius:20px; cursor:pointer; font-weight:bold; margin-bottom:20px;">💾 Salvar Alterações</button>
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:15px;">`;
+            
+            mesesKey.forEach(mes => {
+                const eventos = dados[mes] || [];
+                html += `<div style="background:white; padding:15px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1)">
+                    <h4 style="text-transform:capitalize; margin-top:0; color:#1e3a5f">${mes}</h4>
+                    <div class="mes-container" data-mes="${mes}" contenteditable="true" style="min-height:80px; outline:none; font-size:0.9rem; line-height:1.4">
+                        ${eventos.join('<br>')}
+                    </div>
+                </div>`;
+            });
+            html += `</div></body>`;
+            
+            iframe.srcdoc = html;
+            iframe.onload = () => {
+                const doc = iframe.contentDocument;
+                doc.getElementById('saveBtn').onclick = () => {
+                    const novosDados = {};
+                    doc.querySelectorAll('.mes-container').forEach(div => {
+                        novosDados[div.dataset.mes] = div.innerText.split('\n').filter(t => t.trim() !== "");
+                    });
+                    set(calendarRef, novosDados).then(() => alert("Calendário salvo no Firebase!"));
+                };
+            };
+        });
+        modal.style.display = 'block';
+    };
+
+    // --- WHATSAPP ---
+    window.compartilharWhatsApp = function() {
+        if (!window.config) return;
+        const shift = window.config[window.activeShift];
+        const dia = window.activeDay;
+        const dataDia = shift.data[dia];
+
+        let msg = `🗓️ *HORÁRIO: ${dia.toUpperCase()} (${window.activeShift.toUpperCase()})*\n`;
+        msg += `🏫 *E.M. QUINTINO BOCAIUVA*\n\n`;
+
+        shift.aulas.forEach((aula, aIdx) => {
+            msg += `*${aula.h} (${aula.l})*\n`;
+            shift.turmas.forEach((turma, tIdx) => {
+                const cell = dataDia[aIdx][tIdx];
+                if (cell.teacher && cell.teacher !== "Livre") {
+                    msg += `  • ${turma}: ${cell.teacher} (${cell.room})\n`;
+                }
+            });
+            msg += `\n`;
+        });
+
+        const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
+    };
+
+    // --- ALARMES ---
     let checkMinuto = -1;
     function verificarAlarmes() {
         const agora = new Date();
         if (agora.getMinutes() === checkMinuto) return;
         checkMinuto = agora.getMinutes();
 
-        const horaFormatada = agora.getHours().toString().padStart(2, '0') + ":" + agora.getMinutes().toString().padStart(2, '0');
-        const diaSemana = agora.getDay(); 
+        const horaF = agora.getHours().toString().padStart(2, '0') + ":" + agora.getMinutes().toString().padStart(2, '0');
+        const diaS = agora.getDay();
 
-        if (horaFormatada === "07:05") {
-            if (diaSemana === 1) window.tocar('segunda');
-            if (diaSemana === 5) window.tocar('sexta');
+        if (horaF === "07:05") {
+            if (diaS === 1) window.tocar('segunda');
+            if (diaS === 5) window.tocar('sexta');
         }
 
         if (window.config) {
-            const shift = window.config[window.activeShift || 'manha'];
-            const diaNome = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"][diaSemana];
-            if (shift && shift.data && shift.data[diaNome]) {
+            const shift = window.config[window.activeShift];
+            const diaN = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"][diaS];
+            if (shift && shift.data && shift.data[diaN]) {
                 shift.aulas.forEach((aula, aIdx) => {
-                    if (aula.h === horaFormatada) {
-                        shift.data[diaNome][aIdx].forEach(cel => {
-                            const txt = (cel.teacher || "").toUpperCase();
-                            if (txt.includes("HTPC")) window.tocar('horadohtpc');
-                            if (txt.includes("ATENDIMENTO")) window.tocar('atendimento');
+                    if (aula.h === horaF) {
+                        shift.data[diaN][aIdx].forEach(cel => {
+                            const p = (cel.teacher || "").toUpperCase();
+                            if (p.includes("HTPC")) window.tocar('horadohtpc');
+                            if (p.includes("ATENDIMENTO")) window.tocar('atendimento');
                         });
                     }
                 });
@@ -187,7 +266,7 @@
         }
     });
 
-    // --- RENDERIZAÇÃO ---
+    // --- INTERFACE ---
     window.activeShift = "manha";
     window.activeDay = "Segunda";
     const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
@@ -212,19 +291,13 @@
             html += `<div class="time-slot">${aula.l}<br>${aula.h}</div>`;
             shift.turmas.forEach((_, tIdx) => {
                 const cell = shift.data[window.activeDay][aIdx][tIdx];
-                const prof = (cell.teacher || "Livre");
-                const profUpper = prof.toUpperCase();
-                
-                let classes = "schedule-cell";
-                if (profUpper === "LENO") classes += " cell-leno";
-                
-                // LÓGICA DE CORES: HI e HL
-                if (profUpper.includes("HI")) classes += " cell-hi";
-                if (profUpper.includes("HL")) classes += " cell-hl";
-
-                html += `<div class="${classes}">
-                            <strong>${prof}</strong><small>${cell.room || "---"}</small>
-                        </div>`;
+                const p = cell.teacher || "Livre";
+                const pU = p.toUpperCase();
+                let cl = "schedule-cell";
+                if (pU === "LENO") cl += " cell-leno";
+                if (pU.includes("HI")) cl += " cell-hi";
+                if (pU.includes("HL")) cl += " cell-hl";
+                html += `<div class="${cl}"><strong>${p}</strong><small>${cell.room || "---"}</small></div>`;
             });
         });
         document.getElementById("scheduleGrid").innerHTML = html + `</div>`;
