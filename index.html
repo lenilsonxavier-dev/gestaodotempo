@@ -2,13 +2,13 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão 2026 · Professor Leno</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>PREMEF Quintino Bocaiuva · EMEIEF Osvaldo Quirino</title>
     <style>
         * { box-sizing: border-box; }
-        body { background: #eef2f8; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; }
+        body { background: #eef2f8; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 10px; }
         
-        /* HEADER */
+        /* HEADER ATUALIZADO */
         .header-institucional { width: 100%; max-width: 1400px; margin: 0 auto 15px; display: flex; justify-content: center; background: white; padding: 10px; border-radius: 15px; flex-direction: column; align-items: center; border-bottom: 4px solid #1e3a5f; }
         .editable-prefeitura { font-size: 1.4rem; font-weight: bold; color: #1e3a5f; }
         .editable-gestao { font-size: 2rem; font-weight: bold; color: #1e3a5f; margin: 5px 0; }
@@ -19,52 +19,111 @@
         .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
         .search-input { flex-grow: 1; padding: 12px 20px; border-radius: 40px; border: 2px solid #cbd5e1; outline: none; min-width: 200px; }
         
-        .btn { border: none; padding: 10px 18px; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 0.9rem; }
+        .btn { border: none; padding: 10px 18px; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.85rem; }
         .btn-navy { background: #1e3a5f; }
         .btn-green { background: #22c55e; }
         .btn-orange { background: #f59e0b; }
         .btn-red { background: #ef4444; }
+        .btn-slate { background: #334155; }
+        .btn-sm { padding: 6px 12px; font-size: 0.75rem; }
 
         /* GRADE DE HORÁRIOS */
-        .grid-wrapper { width: 100%; overflow-x: auto; border: 1px solid #cbd5e1; border-radius: 10px; }
-        .schedule-grid { display: grid; background: white; font-size: 0.75rem; }
-        .grid-header, .time-slot { background: #f8fafc; font-weight: bold; text-align: center; padding: 8px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; min-height: 50px; display: flex; align-items: center; justify-content: center; }
-        .schedule-cell { border-bottom: 0.5px solid #e2e8f0; border-right: 0.5px solid #e2e8f0; padding: 8px; min-height: 80px; text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: pointer; }
+        .grid-wrapper { width: 100%; overflow-x: auto; border: 1px solid #cbd5e1; border-radius: 10px; margin-bottom: 25px; }
+        .schedule-grid { display: grid; background: white; font-size: 0.75rem; min-width: 600px; }
+        .grid-header, .time-slot { background: #f8fafc; font-weight: bold; text-align: center; padding: 12px 6px; border-bottom: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; min-height: 60px; display: flex; align-items: center; justify-content: center; flex-direction: column; word-break: break-word; }
+        .schedule-cell { border-bottom: 0.5px solid #e2e8f0; border-right: 0.5px solid #e2e8f0; padding: 10px 6px; min-height: 85px; text-align: center; display: flex; flex-direction: column; justify-content: center; gap: 6px; transition: 0.1s; background-color: white; }
 
         /* CORES CÉLULAS */
-        .cell-leno { background-color: rgba(30, 58, 95, 0.2) !important; border: 2px solid #1e3a5f !important; font-weight: bold; }
-        .cell-hi { background-color: rgba(255, 255, 0, 0.3) !important; border-left: 5px solid #eab308 !important; }
-        .cell-hl { background-color: rgba(239, 68, 68, 0.2) !important; border-left: 5px solid #ef4444 !important; }
+        .cell-leno { background-color: rgba(30, 58, 95, 0.25) !important; border-left: 4px solid #1e3a5f !important; font-weight: bold; }
+        .cell-hi { background-color: rgba(255, 235, 100, 0.4) !important; border-left: 4px solid #eab308 !important; }
+        .cell-hl { background-color: rgba(239, 68, 68, 0.2) !important; border-left: 4px solid #ef4444 !important; }
+
+        /* ESTILOS EDITÁVEIS DENTRO DAS CÉLULAS */
+        .editable-teacher, .editable-room {
+            display: inline-block;
+            width: 100%;
+            padding: 4px 2px;
+            border-radius: 12px;
+            transition: background 0.1s;
+            cursor: text;
+            font-weight: 500;
+        }
+        .editable-teacher {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #0f172a;
+        }
+        .editable-room {
+            font-size: 0.7rem;
+            color: #334155;
+            background: rgba(255,255,240,0.7);
+        }
+        .editable-teacher:hover, .editable-room:hover { background: #e6f0ff; }
+        [contenteditable="true"]:focus {
+            background: #fffacd;
+            outline: 2px solid #f59e0b;
+            border-radius: 6px;
+        }
+
+        /* CAMPO OBSERVAÇÕES ABAIXO DA TABELA */
+        .observations-area {
+            background: #fefce8;
+            border-radius: 16px;
+            padding: 12px 18px;
+            margin-top: 15px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .obs-label {
+            font-weight: bold;
+            color: #1e3a5f;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        .obs-content {
+            width: 100%;
+            font-family: inherit;
+            font-size: 0.9rem;
+            padding: 12px;
+            border-radius: 16px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            resize: vertical;
+            outline: none;
+        }
 
         /* TABS */
         .tabs-row { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; align-items: center; }
-        .tab { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 40px; cursor: pointer; font-weight: 600; white-space: nowrap; }
-        .tab.active { background: #1e3a5f; color: white; }
+        .tab { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 18px; border-radius: 40px; cursor: pointer; font-weight: 600; white-space: nowrap; transition: 0.2s; }
+        .tab.active { background: #1e3a5f; color: white; border-color: #1e3a5f; }
+        .btn-icon { background: #e2e8f0; color: #1e293b; }
 
         /* MODAL CALENDÁRIO */
-        #calendarModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 4000; padding: 20px; }
+        #calendarModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 4000; padding: 20px; }
         .modal-content { background: white; width: 100%; height: 100%; border-radius: 20px; overflow: hidden; position: relative; }
         .close-calendar { position: absolute; top: 15px; right: 20px; background: #ef4444; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-weight: bold; z-index: 4001; }
 
         /* TOAST */
-        .alarm-toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e3a5f; color: white; padding: 15px 30px; border-radius: 50px; z-index: 10001; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: bold; animation: popUp 0.5s ease; }
-        @keyframes popUp { from { bottom: -50px; } to { bottom: 20px; } }
+        .alarm-toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e3a5f; color: white; padding: 12px 24px; border-radius: 50px; z-index: 10001; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: bold; animation: popUp 0.3s ease; }
+        @keyframes popUp { from { bottom: -50px; opacity: 0; } to { bottom: 20px; opacity: 1; } }
         
         #audioUnlock { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(30, 58, 95, 0.98); z-index: 20000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; padding: 20px; }
         #audioUnlock button { padding: 20px 40px; font-size: 1.2rem; cursor: pointer; border-radius: 50px; border: none; background: #22c55e; color: white; font-weight: bold; }
+        .tool-group { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
     </style>
 </head>
 <body>
 
-<!-- BLOQUEIO DE ÁUDIO -->
 <div id="audioUnlock">
     <div style="font-size: 4rem; margin-bottom: 20px;">🔔</div>
-    <h2>Sistema Professor Leno 2026</h2>
+    <h2>PREMEF Quintino Bocaiuva · EMEIEF Osvaldo Quirino</h2>
     <p>Ative os alarmes e integre com o WhatsApp clicando abaixo.</p>
     <button onclick="ativarSons()">ATIVAR SISTEMA AGORA</button>
 </div>
 
-<!-- MODAL CALENDÁRIO -->
 <div id="calendarModal">
     <button class="close-calendar" onclick="document.getElementById('calendarModal').style.display='none'">✕</button>
     <div class="modal-content">
@@ -75,26 +134,37 @@
 <div class="header-institucional">
     <div class="editable-prefeitura">PREFEITURA DE OSASCO</div>
     <div class="editable-gestao">Gestão do Tempo</div>
-    <div class="editable-header">PROFESSOR LENO - E.M. QUINTINO BOCAIUVA</div>
+    <!-- NOVO TEXTO CONFORME SOLICITADO -->
+    <div class="editable-header" id="editableHeaderMain">PREMEF QUINTINO BOCAIUVA - EMEIEF OSVALDO QUIRINO</div>
 </div>
 
 <div class="main-container">
     <div class="toolbar">
-        <input type="text" id="teacherSearch" class="search-input" placeholder="🔍 Localizar na grade...">
+        <input type="text" id="teacherSearch" class="search-input" placeholder="🔍 Buscar professor na grade...">
         <button class="btn btn-green" onclick="compartilharWhatsApp()">🟢 WhatsApp</button>
-        <button class="btn btn-navy" onclick="window.tocar('segunda')">🔊 Seg</button>
-        <button class="btn btn-navy" onclick="window.tocar('sexta')">🔊 Sex</button>
+        <button class="btn btn-navy" onclick="window.tocar('segunda')">🔊 Segunda</button>
+        <button class="btn btn-navy" onclick="window.tocar('sexta')">🔊 Sexta</button>
+        <div class="tool-group">
+            <button class="btn btn-slate btn-sm" onclick="gerenciarTurmas()">📚 Gerenciar Turmas</button>
+            <button class="btn btn-slate btn-sm" onclick="gerenciarHorarios()">⏰ Gerenciar Horários</button>
+        </div>
         <button class="btn btn-red" onclick="window.print()">🖨️ PDF</button>
     </div>
     
     <div class="tabs-row">
         <div id="shiftTabs" style="display:flex; gap:8px;"></div>
-        <button class="tab btn-orange" style="color:white" onclick="window.openCalendar()">📅 Calendário Escolar</button>
+        <button class="tab btn-orange" style="color:white" onclick="window.openCalendar()">📅 Calendário Escolar 2026</button>
     </div>
     <div class="tabs-row" id="dayTabs"></div>
     
     <div class="grid-wrapper">
         <div id="scheduleGrid"></div>
+    </div>
+
+    <!-- CAMPO EDITÁVEL PARA INTERVALOS / OBSERVAÇÕES -->
+    <div class="observations-area">
+        <div class="obs-label">📝 INTERVALOS / OBSERVAÇÕES (clique e edite):</div>
+        <div id="observacoesField" class="obs-content" contenteditable="true" style="min-height: 70px;"></div>
     </div>
 </div>
 
@@ -117,100 +187,280 @@
 
     // --- SONS ---
     const somArquivos = {
-        atendimento: 'atendim.mp3',
-        conselhoHoje: 'conselhohoje.mp3',
-        conselhoSemana: 'conselhosemana.mp3',
-        hojeforma: 'hojeforma.mp3',
-        horadohtpc: 'horadohtpc.mp3',
-        htpc5m: 'htpc5m.mp3',
-        pais: 'pais.mp3',
-        paradapedagogicahoje: 'paradapedagogicahoje.mp3',
-        paradasemana: 'paradasemana.mp3',
-        reuniagestor: 'reuniagestor.mp3',
-        reuniaopaisSemana: encodeURIComponent('reuniãodepaisemana.mp3'),
-        segunda: 'segunda.mp3',
-        sexta: 'sexta.mp3'
+        atendimento: 'atendim.mp3', conselhoHoje: 'conselhohoje.mp3', conselhoSemana: 'conselhosemana.mp3',
+        hojeforma: 'hojeforma.mp3', horadohtpc: 'horadohtpc.mp3', htpc5m: 'htpc5m.mp3',
+        pais: 'pais.mp3', paradapedagogicahoje: 'paradapedagogicahoje.mp3', paradasemana: 'paradasemana.mp3',
+        reuniagestor: 'reuniagestor.mp3', reuniaopaisSemana: encodeURIComponent('reuniãodepaisemana.mp3'),
+        segunda: 'segunda.mp3', sexta: 'sexta.mp3'
     };
-
     const player = {};
-
     window.ativarSons = function() {
-        Object.keys(somArquivos).forEach(key => {
-            player[key] = new Audio(somArquivos[key]);
-            player[key].load();
-        });
+        Object.keys(somArquivos).forEach(key => { player[key] = new Audio(somArquivos[key]); player[key].load(); });
         document.getElementById('audioUnlock').style.display = 'none';
-        showToast("Sistema de Áudio Ativado!");
+        showToast("✅ Áudio ativado com sucesso!");
     };
+    window.tocar = function(key) { if (player[key]) { player[key].play().catch(e=>console.log); showToast("🔊 Tocando: "+key); } };
+    function showToast(msg) { const t = document.createElement('div'); t.className = 'alarm-toast'; t.innerText = msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 3500); }
 
-    window.tocar = function(key) {
-        if (player[key]) {
-            player[key].play().catch(e => console.log("Erro som:", key));
-            showToast("🔊 Testando: " + key);
+    // --- CONFIG GLOBAL ---
+    window.activeShift = "manha";
+    window.activeDay = "Segunda";
+    const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
+
+    // estrutura padrão inicial com turmas e horários exemplo
+    const defaultTurmas = ["6º Ano A", "7º Ano B", "8º Ano C"];
+    const defaultAulas = [
+        { h: "07:00", l: "1ª Aula" }, { h: "07:50", l: "2ª Aula" }, { h: "08:40", l: "3ª Aula" },
+        { h: "09:30", l: "4ª Aula" }, { h: "10:20", l: "5ª Aula" }, { h: "11:10", l: "6ª Aula" }
+    ];
+    function buildEmptyData(turmas, aulas, dias) {
+        const dataObj = {};
+        dias.forEach(dia => {
+            dataObj[dia] = aulas.map(() => turmas.map(() => ({ teacher: "Livre", room: "---" })));
+        });
+        return dataObj;
+    }
+    function getDefaultConfig() {
+        return {
+            manha: { turmas: [...defaultTurmas], aulas: [...defaultAulas], data: buildEmptyData(defaultTurmas, defaultAulas, DIAS) },
+            tarde: { turmas: ["6º B", "7º C", "8º D"], aulas: [...defaultAulas], data: buildEmptyData(["6º B", "7º C", "8º D"], defaultAulas, DIAS) }
+        };
+    }
+
+    // carrega/salva observações
+    function loadObservacoes() {
+        const obsRef = ref(db, 'observacoes_quintino');
+        onValue(obsRef, (snap) => {
+            const texto = snap.val() || "📌 Intervalo: 09:30-09:50\n📌 Reunião de pais agendada para 17/02\n📌 Planejamento HTPC toda quarta-feira.";
+            document.getElementById("observacoesField").innerText = texto;
+        });
+    }
+    function saveObservacoes(text) {
+        set(ref(db, 'observacoes_quintino'), text);
+    }
+
+    // Salvar configuração completa no Firebase
+    async function saveFullConfig() {
+        if (window.config) await set(ref(db, 'horarios_quintino'), { config: window.config });
+    }
+
+    // Inicializar ou carregar dados
+    onValue(ref(db, 'horarios_quintino'), (snapshot) => {
+        const data = snapshot.val();
+        if (data && data.config) {
+            window.config = data.config;
+        } else {
+            window.config = getDefaultConfig();
+            saveFullConfig();
+        }
+        renderAll();
+        attachEditEventsToCurrentGrid(); // para células já existentes
+    });
+    loadObservacoes();
+
+    // SALVAR OBSERVAÇÕES AO EDITAR
+    document.getElementById("observacoesField")?.addEventListener("blur", (e) => {
+        saveObservacoes(e.target.innerText);
+    });
+
+    // ========== RENDERIZAÇÃO PRINCIPAL COM CÉLULAS EDITÁVEIS ==========
+    function renderAll() {
+        if (!window.config) return;
+        const shift = window.config[window.activeShift];
+        if (!shift) return;
+        // TABS turno
+        document.getElementById("shiftTabs").innerHTML = ["manha", "tarde"].map(s => 
+            `<div class="tab ${window.activeShift===s?'active':''}" onclick="window.activeShift='${s}';window.renderAll();attachEditEventsToCurrentGrid();">${s === 'manha' ? 'MANHÃ' : 'TARDE'}</div>`
+        ).join("");
+        document.getElementById("dayTabs").innerHTML = DIAS.map(d => 
+            `<div class="tab ${window.activeDay===d?'active':''}" onclick="window.activeDay='${d}';window.renderAll();attachEditEventsToCurrentGrid();">${d}</div>`
+        ).join("");
+        
+        let html = `<div class="schedule-grid" style="grid-template-columns: 110px repeat(${shift.turmas.length}, minmax(140px, 1fr));">`;
+        html += `<div class="grid-header">Horários / Salas</div>`;
+        shift.turmas.forEach(t => html += `<div class="grid-header">${t}</div>`);
+        
+        shift.aulas.forEach((aula, aIdx) => {
+            html += `<div class="time-slot" data-rowindex="${aIdx}">
+                        <strong contenteditable="true" class="editable-period-label" data-row="${aIdx}" data-field="label">${aula.l}</strong>
+                        <small contenteditable="true" class="editable-period-time" data-row="${aIdx}" data-field="time">${aula.h}</small>
+                     </div>`;
+            shift.turmas.forEach((_, tIdx) => {
+                const cell = shift.data[window.activeDay][aIdx][tIdx];
+                const teacher = cell.teacher || "Livre";
+                const room = cell.room || "---";
+                let teacherUpper = teacher.toUpperCase();
+                let extraClass = "";
+                if (teacherUpper === "LENO") extraClass = "cell-leno";
+                else if (teacherUpper.includes("HI")) extraClass = "cell-hi";
+                else if (teacherUpper.includes("HL")) extraClass = "cell-hl";
+                html += `<div class="schedule-cell ${extraClass}" data-day="${window.activeDay}" data-row="${aIdx}" data-col="${tIdx}">
+                            <span class="editable-teacher" contenteditable="true" data-field="teacher">${escapeHtml(teacher)}</span>
+                            <span class="editable-room" contenteditable="true" data-field="room">${escapeHtml(room)}</span>
+                         </div>`;
+            });
+        });
+        document.getElementById("scheduleGrid").innerHTML = html + `</div>`;
+        
+        // Filtro de pesquisa (destaca células)
+        const searchTerm = document.getElementById("teacherSearch")?.value?.toLowerCase() || "";
+        if (searchTerm) {
+            document.querySelectorAll(".editable-teacher").forEach(el => {
+                const txt = el.innerText.toLowerCase();
+                if (txt.includes(searchTerm)) el.parentElement?.parentElement?.classList.add("search-highlight");
+                else el.parentElement?.parentElement?.classList.remove("search-highlight");
+            });
+        }
+        attachEditEventsToCurrentGrid();
+        attachPeriodEdits();
+    }
+
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    // Aplicar edição inline para professores e salas
+    function attachEditEventsToCurrentGrid() {
+        document.querySelectorAll(".editable-teacher").forEach(el => {
+            el.removeEventListener("blur", teacherBlurHandler);
+            el.addEventListener("blur", teacherBlurHandler);
+        });
+        document.querySelectorAll(".editable-room").forEach(el => {
+            el.removeEventListener("blur", roomBlurHandler);
+            el.addEventListener("blur", roomBlurHandler);
+        });
+    }
+    
+    function teacherBlurHandler(e) {
+        const cellDiv = e.target.closest(".schedule-cell");
+        if (!cellDiv) return;
+        const row = parseInt(cellDiv.dataset.row);
+        const col = parseInt(cellDiv.dataset.col);
+        const day = cellDiv.dataset.day;
+        const newTeacher = e.target.innerText.trim() || "Livre";
+        const shiftData = window.config[window.activeShift];
+        if (shiftData && shiftData.data[day] && shiftData.data[day][row] && shiftData.data[day][row][col]) {
+            shiftData.data[day][row][col].teacher = newTeacher;
+            // atualizar cor da célula dinamicamente sem recriar toda grade
+            const teacherUpper = newTeacher.toUpperCase();
+            cellDiv.classList.remove("cell-leno", "cell-hi", "cell-hl");
+            if (teacherUpper === "LENO") cellDiv.classList.add("cell-leno");
+            else if (teacherUpper.includes("HI")) cellDiv.classList.add("cell-hi");
+            else if (teacherUpper.includes("HL")) cellDiv.classList.add("cell-hl");
+            saveFullConfig();
+        }
+    }
+    
+    function roomBlurHandler(e) {
+        const cellDiv = e.target.closest(".schedule-cell");
+        if (!cellDiv) return;
+        const row = parseInt(cellDiv.dataset.row);
+        const col = parseInt(cellDiv.dataset.col);
+        const day = cellDiv.dataset.day;
+        const newRoom = e.target.innerText.trim() || "---";
+        const shiftData = window.config[window.activeShift];
+        if (shiftData && shiftData.data[day] && shiftData.data[day][row] && shiftData.data[day][row][col]) {
+            shiftData.data[day][row][col].room = newRoom;
+            saveFullConfig();
+        }
+    }
+    
+    // Edição dos horários (label + hora) no próprio time-slot
+    function attachPeriodEdits() {
+        document.querySelectorAll(".editable-period-label").forEach(el => {
+            el.removeEventListener("blur", periodLabelBlur);
+            el.addEventListener("blur", periodLabelBlur);
+        });
+        document.querySelectorAll(".editable-period-time").forEach(el => {
+            el.removeEventListener("blur", periodTimeBlur);
+            el.addEventListener("blur", periodTimeBlur);
+        });
+    }
+    function periodLabelBlur(e) {
+        const rowIdx = parseInt(e.target.dataset.row);
+        const newLabel = e.target.innerText.trim();
+        if (isNaN(rowIdx)) return;
+        const shift = window.config[window.activeShift];
+        if (shift && shift.aulas[rowIdx]) {
+            shift.aulas[rowIdx].l = newLabel;
+            saveFullConfig();
+        }
+    }
+    function periodTimeBlur(e) {
+        const rowIdx = parseInt(e.target.dataset.row);
+        const newTime = e.target.innerText.trim();
+        if (isNaN(rowIdx)) return;
+        const shift = window.config[window.activeShift];
+        if (shift && shift.aulas[rowIdx]) {
+            shift.aulas[rowIdx].h = newTime;
+            saveFullConfig();
+        }
+    }
+
+    // ========== GERENCIAR TURMAS E HORÁRIOS ==========
+    window.gerenciarTurmas = function() {
+        const shift = window.config[window.activeShift];
+        if (!shift) return;
+        let novosNomes = prompt("Editar nomes das turmas (separados por vírgula):\n" + shift.turmas.join(", "), shift.turmas.join(", "));
+        if (novosNomes) {
+            const lista = novosNomes.split(",").map(s => s.trim()).filter(s => s);
+            if (lista.length === 0) return;
+            const oldLen = shift.turmas.length;
+            const newLen = lista.length;
+            // Reestrutura dados: preservar conteúdo antigo
+            for (let dia of DIAS) {
+                for (let i = 0; i < shift.aulas.length; i++) {
+                    const novaLinha = [];
+                    for (let j = 0; j < newLen; j++) {
+                        if (j < oldLen && shift.data[dia][i][j]) novaLinha.push({ ...shift.data[dia][i][j] });
+                        else novaLinha.push({ teacher: "Livre", room: "---" });
+                    }
+                    shift.data[dia][i] = novaLinha;
+                }
+            }
+            shift.turmas = lista;
+            saveFullConfig();
+            renderAll();
+        }
+    };
+    
+    window.gerenciarHorarios = function() {
+        const shift = window.config[window.activeShift];
+        if (!shift) return;
+        let novoTexto = prompt("Editar horários (formato: Horário|Label, um por linha):\nEx: 07:00|1ª Aula\n07:50|2ª Aula", 
+            shift.aulas.map(a => `${a.h}|${a.l}`).join("\n"));
+        if (novoTexto) {
+            const linhas = novoTexto.split("\n").filter(l => l.trim() && l.includes("|"));
+            if (linhas.length === 0) return;
+            const novasAulas = linhas.map(l => {
+                const [h, label] = l.split("|");
+                return { h: h.trim(), l: label.trim() };
+            });
+            const oldRows = shift.aulas.length;
+            const newRows = novasAulas.length;
+            // reorganizar matriz de dados para cada dia
+            for (let dia of DIAS) {
+                const novaMatrizDia = [];
+                for (let i = 0; i < newRows; i++) {
+                    if (i < oldRows && shift.data[dia][i]) novaMatrizDia.push([...shift.data[dia][i]]);
+                    else novaMatrizDia.push(shift.turmas.map(() => ({ teacher: "Livre", room: "---" })));
+                }
+                shift.data[dia] = novaMatrizDia;
+            }
+            shift.aulas = novasAulas;
+            saveFullConfig();
+            renderAll();
         }
     };
 
-    function showToast(msg) {
-        const t = document.createElement('div');
-        t.className = 'alarm-toast';
-        t.innerText = msg;
-        document.body.appendChild(t);
-        setTimeout(() => t.remove(), 4000);
-    }
-
-    // --- CALENDÁRIO ---
-    window.openCalendar = function() {
-        const modal = document.getElementById('calendarModal');
-        const iframe = document.getElementById('calFrame');
-        const calendarRef = ref(db, 'calendario_2026');
-
-        onValue(calendarRef, (snapshot) => {
-            const dados = snapshot.val() || { janeiro: ["01/01 - Ano Novo"] };
-            const mesesKey = ["janeiro", "fevereiro", "marco", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
-            
-            let html = `<body style="font-family:sans-serif; padding:20px; background:#f0f7ff">
-                <h2 style="color:#1e3a5f">📅 Calendário Escolar 2026</h2>
-                <button id="saveBtn" style="background:#22c55e; color:white; border:none; padding:10px 20px; border-radius:20px; cursor:pointer; font-weight:bold; margin-bottom:20px;">💾 Salvar Alterações</button>
-                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:15px;">`;
-            
-            mesesKey.forEach(mes => {
-                const eventos = dados[mes] || [];
-                html += `<div style="background:white; padding:15px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1)">
-                    <h4 style="text-transform:capitalize; margin-top:0; color:#1e3a5f">${mes}</h4>
-                    <div class="mes-container" data-mes="${mes}" contenteditable="true" style="min-height:80px; outline:none; font-size:0.9rem; line-height:1.4">
-                        ${eventos.join('<br>')}
-                    </div>
-                </div>`;
-            });
-            html += `</div></body>`;
-            
-            iframe.srcdoc = html;
-            iframe.onload = () => {
-                const doc = iframe.contentDocument;
-                doc.getElementById('saveBtn').onclick = () => {
-                    const novosDados = {};
-                    doc.querySelectorAll('.mes-container').forEach(div => {
-                        novosDados[div.dataset.mes] = div.innerText.split('\n').filter(t => t.trim() !== "");
-                    });
-                    set(calendarRef, novosDados).then(() => alert("Calendário salvo no Firebase!"));
-                };
-            };
-        });
-        modal.style.display = 'block';
-    };
-
-    // --- WHATSAPP ---
+    // ========== WHATSAPP com novo nome da escola ==========
     window.compartilharWhatsApp = function() {
         if (!window.config) return;
         const shift = window.config[window.activeShift];
         const dia = window.activeDay;
         const dataDia = shift.data[dia];
-
-        let msg = `🗓️ *HORÁRIO: ${dia.toUpperCase()} (${window.activeShift.toUpperCase()})*\n`;
-        msg += `🏫 *E.M. QUINTINO BOCAIUVA*\n\n`;
-
+        let msg = `🗓️ *HORÁRIO: ${dia.toUpperCase()} (${window.activeShift === 'manha' ? 'MANHÃ' : 'TARDE'})*\n`;
+        msg += `🏫 *PREMEF QUINTINO BOCAIUVA - EMEIEF OSVALDO QUIRINO*\n\n`;
         shift.aulas.forEach((aula, aIdx) => {
-            msg += `*${aula.h} (${aula.l})*\n`;
+            msg += `*${aula.l} (${aula.h})*\n`;
             shift.turmas.forEach((turma, tIdx) => {
                 const cell = dataDia[aIdx][tIdx];
                 if (cell.teacher && cell.teacher !== "Livre") {
@@ -219,89 +469,110 @@
             });
             msg += `\n`;
         });
-
         const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
         window.open(url, '_blank');
     };
+    
+    // ========== CALENDÁRIO ESCOLAR 2026 (DADOS SOLICITADOS) ==========
+    window.openCalendar = function() {
+        const modal = document.getElementById('calendarModal');
+        const iframe = document.getElementById('calFrame');
+        const calendarRef = ref(db, 'calendario_2026');
+        get(calendarRef).then((snapshot) => {
+            let dados = snapshot.val();
+            const defaultCalendar = {
+                janeiro: ["01/01 - Confraternização Universal"],
+                fevereiro: ["03/02 - Início das aulas", "12-14/02 - Carnaval", "17/02 - Reunião de Pais"],
+                marco: ["08/03 - Dia da Mulher", "15/03 - Formação Pedagógica", "25/03 - Conselho de Classe"],
+                abril: ["07/04 - Reunião de Pais", "18/04 - Tiradentes", "21/04 - Descobrimento", "25/04 - Conselho"],
+                maio: ["01/05 - Dia do Trabalhador", "07/05 - Reunião de Pais", "15/05 - Formação", "25/05 - Conselho"],
+                junho: ["04/06 - Reunião", "15/06 - Formação", "20-25/06 - Festa Junina", "24/06 - São João", "27/06 - Conselho"],
+                julho: ["01-20/07 - Férias Escolares", "25/07 - Replanejamento", "30/07 - Retorno"],
+                agosto: ["08/08 - Reunião", "15/08 - Formação", "25/08 - Conselho"],
+                setembro: ["07/09 - Independência", "12/09 - Reunião", "20/09 - Formação", "28/09 - Conselho"],
+                outubro: ["05/10 - Reunião", "12/10 - N. Sra. Aparecida", "15/10 - Dia do Professor", "20/10 - Formação", "25/10 - Conselho"],
+                novembro: ["02/11 - Finados", "09/11 - Reunião", "15/11 - Proclamação", "20/11 - Consciência Negra", "25/11 - Formação", "30/11 - Conselho"],
+                dezembro: ["05/12 - Reunião Final", "10/12 - Confraternização", "15/12 - Encerramento", "25/12 - Natal"]
+            };
+            if (!dados) {
+                set(calendarRef, defaultCalendar);
+                dados = defaultCalendar;
+            } else {
+                // garantir meses faltantes
+                let atualizado = false;
+                for (let [mes, eventos] of Object.entries(defaultCalendar)) {
+                    if (!dados[mes]) { dados[mes] = eventos; atualizado = true; }
+                }
+                if (atualizado) set(calendarRef, dados);
+            }
+            const mesesKey = ["janeiro","fevereiro","marco","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+            let html = `<body style="font-family:sans-serif; padding:20px; background:#f0f7ff">
+                <h2 style="color:#1e3a5f">📅 Calendário Escolar 2026 · Editável</h2>
+                <button id="saveCalendarBtn" style="background:#22c55e; color:white; border:none; padding:12px 24px; border-radius:30px; cursor:pointer; font-weight:bold; margin-bottom:20px;">💾 SALVAR ALTERAÇÕES</button>
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:20px;">`;
+            mesesKey.forEach(mes => {
+                const eventos = dados[mes] || [];
+                html += `<div style="background:white; padding:15px; border-radius:16px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+                    <h4 style="text-transform:capitalize; margin-top:0; color:#1e3a5f">${mes}</h4>
+                    <div class="mes-calendario" data-mes="${mes}" contenteditable="true" style="min-height:90px; outline:none; font-size:0.85rem; line-height:1.5; border:1px dashed #ccc; padding:6px;">${eventos.join('<br>')}</div>
+                </div>`;
+            });
+            html += `</div></body>`;
+            iframe.srcdoc = html;
+            iframe.onload = () => {
+                const docIframe = iframe.contentDocument;
+                docIframe.getElementById('saveCalendarBtn').onclick = () => {
+                    const novosDados = {};
+                    docIframe.querySelectorAll('.mes-calendario').forEach(div => {
+                        const textoRaw = div.innerText;
+                        const linhas = textoRaw.split('\n').filter(l => l.trim() !== "");
+                        novosDados[div.dataset.mes] = linhas;
+                    });
+                    set(calendarRef, novosDados).then(() => alert("✅ Calendário salvo no Firebase!"));
+                };
+            };
+        });
+        modal.style.display = 'block';
+    };
+    
+    // Pesquisa professor
+    document.getElementById("teacherSearch").addEventListener("input", (e) => {
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll(".schedule-cell").forEach(cell => {
+            const teacherSpan = cell.querySelector(".editable-teacher");
+            if (teacherSpan && teacherSpan.innerText.toLowerCase().includes(term)) cell.style.backgroundColor = "#fff3bf";
+            else cell.style.backgroundColor = "";
+        });
+    });
 
-    // --- ALARMES ---
-    let checkMinuto = -1;
-    function verificarAlarmes() {
-        const agora = new Date();
-        if (agora.getMinutes() === checkMinuto) return;
-        checkMinuto = agora.getMinutes();
-
-        const horaF = agora.getHours().toString().padStart(2, '0') + ":" + agora.getMinutes().toString().padStart(2, '0');
-        const diaS = agora.getDay();
-
-        if (horaF === "07:05") {
-            if (diaS === 1) window.tocar('segunda');
-            if (diaS === 5) window.tocar('sexta');
-        }
-
-        if (window.config) {
-            const shift = window.config[window.activeShift];
-            const diaN = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"][diaS];
-            if (shift && shift.data && shift.data[diaN]) {
-                shift.aulas.forEach((aula, aIdx) => {
-                    if (aula.h === horaF) {
-                        shift.data[diaN][aIdx].forEach(cel => {
-                            const p = (cel.teacher || "").toUpperCase();
-                            if (p.includes("HTPC")) window.tocar('horadohtpc');
-                            if (p.includes("ATENDIMENTO")) window.tocar('atendimento');
+    // Alarmes (simples)
+    let lastMinute = -1;
+    setInterval(() => {
+        const now = new Date();
+        if (now.getMinutes() !== lastMinute) {
+            lastMinute = now.getMinutes();
+            const hora = now.getHours().toString().padStart(2,'0')+":"+now.getMinutes().toString().padStart(2,'0');
+            const diaSemana = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"][now.getDay()];
+            if (window.config && window.config[window.activeShift] && window.config[window.activeShift].data && window.config[window.activeShift].data[diaSemana]) {
+                const aulas = window.config[window.activeShift].aulas;
+                const dataDia = window.config[window.activeShift].data[diaSemana];
+                aulas.forEach((aula, idx) => {
+                    if (aula.h === hora) {
+                        dataDia[idx].forEach(cel => {
+                            const prof = (cel.teacher || "").toUpperCase();
+                            if (prof.includes("HTPC")) window.tocar("horadohtpc");
+                            if (prof.includes("ATENDIMENTO")) window.tocar("atendimento");
                         });
                     }
                 });
             }
+            if (hora === "07:05") { if (now.getDay() === 1) window.tocar('segunda'); if (now.getDay() === 5) window.tocar('sexta'); }
         }
-    }
-    setInterval(verificarAlarmes, 30000);
-
-    // --- DATABASE ---
-    onValue(ref(db, 'horarios_quintino'), (snapshot) => {
-        const data = snapshot.val();
-        if (data && data.config) {
-            window.config = data.config;
-            window.renderAll();
-        }
-    });
-
-    // --- INTERFACE ---
-    window.activeShift = "manha";
-    window.activeDay = "Segunda";
-    const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"];
-
-    window.renderAll = function() {
-        if (!window.config) return;
-        const shift = window.config[window.activeShift];
-        
-        document.getElementById("shiftTabs").innerHTML = ["manha", "tarde"].map(s => 
-            `<div class="tab ${window.activeShift===s?'active':''}" onclick="window.activeShift='${s}';window.renderAll()">${s.toUpperCase()}</div>`
-        ).join("");
-
-        document.getElementById("dayTabs").innerHTML = DIAS.map(d => 
-            `<div class="tab ${window.activeDay===d?'active':''}" onclick="window.activeDay='${d}';window.renderAll()">${d}</div>`
-        ).join("");
-
-        let html = `<div class="schedule-grid" style="grid-template-columns: 100px repeat(${shift.turmas.length}, minmax(120px, 1fr))">`;
-        html += `<div class="grid-header">Horários</div>`;
-        shift.turmas.forEach(t => html += `<div class="grid-header">${t}</div>`);
-        
-        shift.aulas.forEach((aula, aIdx) => {
-            html += `<div class="time-slot">${aula.l}<br>${aula.h}</div>`;
-            shift.turmas.forEach((_, tIdx) => {
-                const cell = shift.data[window.activeDay][aIdx][tIdx];
-                const p = cell.teacher || "Livre";
-                const pU = p.toUpperCase();
-                let cl = "schedule-cell";
-                if (pU === "LENO") cl += " cell-leno";
-                if (pU.includes("HI")) cl += " cell-hi";
-                if (pU.includes("HL")) cl += " cell-hl";
-                html += `<div class="${cl}"><strong>${p}</strong><small>${cell.room || "---"}</small></div>`;
-            });
-        });
-        document.getElementById("scheduleGrid").innerHTML = html + `</div>`;
-    };
+    }, 30000);
+    
+    // garantir eventos após carregamento
+    window.renderAll = renderAll;
+    window.attachEditEventsToCurrentGrid = attachEditEventsToCurrentGrid;
 </script>
 </body>
 </html>
